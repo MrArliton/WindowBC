@@ -1,5 +1,6 @@
 
-std::vector<claster> AnalyseSystem::MakeClastersFromPoints(const std::vector<point> points){
+std::vector<claster> AnalyseSystem::MakeClastersFromPoints(const std::vector<point> points)
+{
     std::vector<claster> clasters;
     clasters.reserve(points.size());
     for(auto pnt:points)
@@ -22,11 +23,13 @@ void AnalyseSystem::LoadPointsFromFileCSV(const std::string& path)
 
 void AnalyseSystem::StartClasterization(lfloat attraction_coef, lfloat trend_coef)
 {
-    if(thread && !thread->IsAlive()){
+    if(thread && !thread->IsAlive())
+    {
         delete thread;
         thread = nullptr;
     }    
-    if(!thread){
+    if(!thread)
+    {
         thread = new CalculateClasterizationThread(parent, cInfo, attraction_coef, trend_coef);
         if (thread->Create() != wxTHREAD_NO_ERROR)
         {
@@ -39,8 +42,10 @@ void AnalyseSystem::StartClasterization(lfloat attraction_coef, lfloat trend_coe
     }
 }
 
-void AnalyseSystem::RevertClasterization(){
-    if(thread && thread->IsRunning()){
+void AnalyseSystem::RevertClasterization()
+{
+    if(thread && thread->IsRunning())
+    {
         thread->Delete();
     }
     cInfo.clasters = std::move(convert_csv_to_clasters(cInfo.pathToPoints, MaxPointsForLoading).value());
@@ -50,7 +55,8 @@ void AnalyseSystem::RevertClasterization(){
 }
 
 
-void CalculateClasterizationThread::Progress(lfloat prog){
+void CalculateClasterizationThread::Progress(lfloat prog)
+{
     wxCommandEvent evt(AnalyseSystemEvent, aUpdateViewEvtID);
     evt.SetClientData(new lfloat(prog)); // Don't forget free!!!!
     wxPostEvent(parent, evt);

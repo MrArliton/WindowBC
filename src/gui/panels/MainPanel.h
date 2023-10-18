@@ -8,7 +8,8 @@ private:
      mToolbarPanel* toolbarPanel;
      wxPanel* consolePanel;
 public:        
-    MainPanel(wxWindow* parent, wxWindowID id) : wxPanel(parent,id) {
+    MainPanel(wxWindow* parent, wxWindowID id) : wxPanel(parent,id)
+    {
 
         const auto margin = FromDIP(1);
 
@@ -63,26 +64,31 @@ public:
 
     } 
     template<typename Class,typename EventHandler>
-    void SetEventFunction(void(Class::*func)(wxCommandEvent & evt), EventHandler* handler){
+    void SetEventFunction(void(Class::*func)(wxCommandEvent & evt), EventHandler* handler)
+    {
         toolbarRightPanel->SetEventFunction(func, handler);
         toolbarPanel->SetEventFunction(func, handler);
     }
-    void UpdateDrawingPanel(std::vector<claster>* clasters, bool colorMode = OneColorMode){
+    void UpdateDrawingPanel(std::vector<claster>* clasters, bool colorMode = OneColorMode)
+    {
         drawingPanel->SetClasters(clasters);
         drawingPanel->SetColorMode(colorMode);
         drawingPanel->Paint();
     }
-    void UpdateProgressBar(lfloat progress){
+    void UpdateProgressBar(lfloat progress)
+    {
         toolbarLeftPanel->SetProgress(progress);
     }
 
 
-    std::optional<std::map<std::string, lfloat>> GetClasterizationOptions(){
+    std::optional<std::map<std::string, lfloat>> GetClasterizationOptions()
+    {
         std::map<std::string, lfloat> mp;
         auto a_coef = toolbarRightPanel->GetAttractionCoeficient();
         auto t_coef = toolbarRightPanel->GetTrendCoeficient();
         auto size = toolbarRightPanel->GetSizeOfDataset();
-        if(!a_coef || !t_coef || !size){
+        if(!a_coef || !t_coef || !size)
+        {
             std::cerr << "Error: Attraction or Trend Coefficients are incorrect.";
             return std::nullopt;
         }

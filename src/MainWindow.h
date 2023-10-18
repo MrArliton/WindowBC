@@ -2,7 +2,8 @@
 #ifndef MainApp_H
 #define MainApp_H
 
-class MainApp : public wxApp {
+class MainApp : public wxApp
+{
     public:
         virtual bool OnInit();
 };

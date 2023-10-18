@@ -1,6 +1,7 @@
 
 
-class mRightToolbarPanel : public wxPanel {
+class mRightToolbarPanel : public wxPanel
+{
 private:
     wxStaticText* attractionCoefText;
     wxStaticText* trendCoefText;
@@ -65,7 +66,8 @@ public:
         this->SetSizer(sizer);
     }
     template< typename Class, typename EventHandler>
-    void SetEventFunction(void(Class::*func)(wxCommandEvent & evt), EventHandler* handler){
+    void SetEventFunction(void(Class::*func)(wxCommandEvent & evt), EventHandler* handler)
+    {
         startClasterization->Bind(wxEVT_BUTTON, func, handler); 
         revertClasterization->Bind(wxEVT_BUTTON, func, handler); 
     }
@@ -74,7 +76,8 @@ public:
     std::optional<lfloat> GetAttractionCoeficient() const
     {
         double value;
-        if(!setAttractionCoef->GetLineText(0).ToDouble(&value)){
+        if(!setAttractionCoef->GetLineText(0).ToDouble(&value))
+        {
             return std::nullopt;
         }
         return value;
@@ -82,7 +85,8 @@ public:
     std::optional<lfloat> GetTrendCoeficient() const
     {
         double value;
-        if(!setTrendCoef->GetLineText(0).ToDouble(&value)){
+        if(!setTrendCoef->GetLineText(0).ToDouble(&value))
+        {
             return std::nullopt;
         }
         return value;
@@ -90,7 +94,8 @@ public:
     std::optional<lfloat> GetSizeOfDataset() const
     {
         double value;
-        if(!setSizeOfDataset->GetLineText(0).ToDouble(&value)){
+        if(!setSizeOfDataset->GetLineText(0).ToDouble(&value))
+        {
             return std::nullopt;
         }
         return value;

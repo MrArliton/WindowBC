@@ -1,5 +1,6 @@
 
-class mLeftToolbarPanel : public wxPanel {
+class mLeftToolbarPanel : public wxPanel
+{
 private:
     wxStaticText* progressText;
     wxGauge* progressBar;

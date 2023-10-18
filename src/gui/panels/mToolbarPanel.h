@@ -1,5 +1,6 @@
 
-class mToolbarPanel : public wxPanel {
+class mToolbarPanel : public wxPanel
+{
 private:
     wxButton* loadFileButton;
 public:
@@ -18,7 +19,8 @@ public:
         this->SetSizer(sizer);
     }
     template< typename Class, typename EventHandler>
-    void SetEventFunction(void(Class::*func)(wxCommandEvent & evt), EventHandler* handler){
+    void SetEventFunction(void(Class::*func)(wxCommandEvent & evt), EventHandler* handler)
+    {
         loadFileButton->Bind(wxEVT_BUTTON, func, handler); 
     }
 
