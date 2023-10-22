@@ -167,11 +167,12 @@ dissimilarities u_calculate_start_dissimilarities(const std::vector<claster>& cl
     dissimilarities dmat(width);
     for(int i = 0;i < width;i++)
     {
-        dmat[i].resize(width);
-        if(thread->TestDelete())
+        if(thread->TestDestroy()) // If Thread is terminated 
         {
             break;
         }
+
+        dmat[i].resize(width);
         for(int j = 0;j < i;j++)
         {
             dmat[j][i] = dmat[i][j] = u_calculate_disimilarity(clasters[i].points[0],clasters[j].points[0], attraction_coef);
@@ -219,8 +220,8 @@ template < typename Class >
 std::vector<claster> u_generic_linkage(std::vector<claster> clasters, lfloat attraction_coef, lfloat trend_coef, Class* thread)  
 {
 
-    dissimilarities diss = u_calculate_start_dissimilarities(clasters, attraction_coef);
-    if(thread->TestDelete())
+    dissimilarities diss = u_calculate_start_dissimilarities(clasters, attraction_coef, thread);
+    if(thread->TestDestroy())
     {
         return {};
     }

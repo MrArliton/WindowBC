@@ -52,14 +52,17 @@ void MainFrame::OnCommand(wxCommandEvent & evt)
       break;  
     case aEndLoadOfPointsEvtID:
       panel->UpdateDrawingPanel(static_cast<std::vector<claster>*>(evt.GetClientData()), OneColorMode);
+      analyse->endCommand();
       break;
     case aEndClasterizationEvtID:
       panel->UpdateProgressBar(0);
       panel->UpdateDrawingPanel(static_cast<std::vector<claster>*>(evt.GetClientData()), MultiColorMode);
+      analyse->endCommand();
       break;
     case aEndRevertClasterizationEvtID:
       panel->UpdateProgressBar(0);
       panel->UpdateDrawingPanel(static_cast<std::vector<claster>*>(evt.GetClientData()), OneColorMode);
+      analyse->endCommand();
       break;    
     case aUpdateViewEvtID:
       {

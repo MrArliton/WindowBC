@@ -14,6 +14,14 @@ std::vector<claster> AnalyseSystem::MakeClastersFromPoints(const std::vector<poi
 
 void AnalyseSystem::LoadPointsFromFileCSV(const std::string& path)
 {
+    if(thread)
+    {
+        thread->Delete();
+        thread = nullptr;
+
+        updateProgress(0);
+    }
+
     cInfo.pathToPoints = path;
     cInfo.clasters = std::move(convert_csv_to_clasters(path, MaxPointsForLoading).value());
     wxCommandEvent evt(AnalyseSystemEvent, aEndLoadOfPointsEvtID);
@@ -23,10 +31,12 @@ void AnalyseSystem::LoadPointsFromFileCSV(const std::string& path)
 
 void AnalyseSystem::StartClasterization(lfloat attraction_coef, lfloat trend_coef)
 {
-    if(thread && !thread->IsAlive())
-    {
-        delete thread;
+    if(thread)
+    {   
+        thread->Delete();
         thread = nullptr;
+
+        updateProgress(0);
     }    
     if(!thread)
     {
@@ -44,9 +54,12 @@ void AnalyseSystem::StartClasterization(lfloat attraction_coef, lfloat trend_coe
 
 void AnalyseSystem::RevertClasterization()
 {
-    if(thread && thread->IsRunning())
+    if(thread)
     {
         thread->Delete();
+        thread = nullptr;
+
+        updateProgress(0);
     }
     cInfo.clasters = std::move(convert_csv_to_clasters(cInfo.pathToPoints, MaxPointsForLoading).value());
     wxCommandEvent evt(AnalyseSystemEvent, aEndRevertClasterizationEvtID);
@@ -54,7 +67,19 @@ void AnalyseSystem::RevertClasterization()
     parent->ProcessWindowEvent(evt);         
 }
 
+void AnalyseSystem::endCommand()
+{
+    thread = nullptr;
+}
 
+void AnalyseSystem::updateProgress(lfloat progress)
+{
+    wxCommandEvent evt(AnalyseSystemEvent, aUpdateViewEvtID);
+    evt.SetClientData(new lfloat(progress)); // Free lfloat* in CommandFunction
+    parent->ProcessWindowEvent(evt);   
+}
+
+//--------------------------------------------
 void CalculateClasterizationThread::Progress(lfloat prog)
 {
     wxCommandEvent evt(AnalyseSystemEvent, aUpdateViewEvtID);
@@ -78,3 +103,4 @@ void *CalculateClasterizationThread::Entry()
     wxPostEvent(parent, evt);
     return nullptr;
 }
+

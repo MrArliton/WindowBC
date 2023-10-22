@@ -65,6 +65,9 @@ class AnalyseSystem
         
         void StartClasterization(lfloat attraction_coef, lfloat trend_coef);
         void RevertClasterization();
+
+        void updateProgress(lfloat progress); // From 0 to 1 -- float
+        void endCommand(); // Says system that thread is terminated succesfully 
 };
 
 
