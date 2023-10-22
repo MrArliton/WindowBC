@@ -35,6 +35,7 @@ private:
             const auto margin_axis = FromDIP(5);
             const auto max_sized_text = wxString::Format(wxT("%.0f"), static_cast<float>(GraphWidth)); 
             dc.SetFont(wxFont((drawing_area_size/(AmountOfAxisValues))/max_sized_text.Length(), wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
+            const auto text_max_width = dc.GetTextExtent(max_sized_text).GetWidth();
             //Horizontal
             for(size_t i = 0;i < AmountOfAxisValues;i++)
             {
@@ -45,13 +46,13 @@ private:
                 dc.DrawLine(start_x + i*(drawing_area_size/(AmountOfAxisValues-1)), start_y - FromDIP(1), start_x + i*(drawing_area_size/(AmountOfAxisValues-1)), start_y + FromDIP(1));
                 dc.SetPen(wxPen( DefaultColorForDrawingAreaBorder, DefaultWidthForDrawingAreaBorder ));
             }
-            dc.SetFont(wxFont(((margin_for_axis + margin)*2)/max_sized_text.Length(), wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
+            dc.SetFont(wxFont(std::min(start_x/max_sized_text.Length(),static_cast<size_t>(dc.GetFont().GetPointSize())), wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
             //Vertical
             for(size_t i = 1;i < AmountOfAxisValues;i++)
             {
                 auto text = wxString::Format(wxT("%.0f"), static_cast<float>(i*(GraphHeight/(AmountOfAxisValues-1))));  
                 
-                dc.DrawText(text, start_x - margin_for_axis - margin , start_y - i*(drawing_area_size/(AmountOfAxisValues-1)));
+                dc.DrawText(text, start_x - dc.GetTextExtent(text).GetWidth() - margin , start_y - i*(drawing_area_size/(AmountOfAxisValues-1)));
                 dc.SetPen(wxPen( wxColor(100,0,0), DefaultWidthForDrawingAreaBorder ));
                 dc.DrawLine(start_x - FromDIP(1), start_y  - i*(drawing_area_size/(AmountOfAxisValues-1)), start_x + FromDIP(1), start_y  - i*(drawing_area_size/(AmountOfAxisValues-1)));
                 dc.SetPen(wxPen( DefaultColorForDrawingAreaBorder, DefaultWidthForDrawingAreaBorder ));
@@ -81,8 +82,13 @@ private:
                 }
                 for(auto pnt:cls.points)
                 {
-                    dc.DrawCircle(start_x + drawing_area_size * (pnt[0] / GraphWidth),
-                    start_y - drawing_area_size * (pnt[1] / GraphHeight), PointsWidth);
+                    const auto s_x = pnt[0] / GraphWidth;
+                    const auto s_y = pnt[1] / GraphHeight;
+                    if(s_x < 1 && s_y < 1)
+                    {
+                        dc.DrawCircle(start_x + drawing_area_size * s_x,
+                        start_y - drawing_area_size * s_y, PointsWidth);
+                    }
                 }
                 cls_id++;
             }    
