@@ -1,0 +1,10 @@
+.idea
+**/*.pyc
+.cache
+/venv
+/.vscode
+/build
+/dist
+versioneer.py
+/fcsparser.egg-info
+setup.cfg
