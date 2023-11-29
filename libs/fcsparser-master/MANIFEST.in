@@ -1,3 +1,0 @@
-include *.txt
-global-include *.fcs
-include fcsparser/_version.py

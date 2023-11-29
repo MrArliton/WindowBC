@@ -3,12 +3,20 @@ void MainFrame::loadPoints()
 {
 
     wxFileDialog* openFileDialog = new wxFileDialog(NULL,  _("Open CSV file"), "", "",
-        "CSV/FCS files (*.csv)|*.csv|*.fcs|(*.fcs)", wxFD_OPEN|wxFD_FILE_MUST_EXIST);
+        "CSV files (*.csv)|*.csv|FCS files (*.fcs)|*.fcs", wxFD_OPEN|wxFD_FILE_MUST_EXIST);
 
 
 	if (openFileDialog->ShowModal() == wxID_OK) 
 	{
-      analyse->LoadPointsFromFileCSV(openFileDialog->GetPath().ToStdString());
+      std::string path = openFileDialog->GetPath().ToStdString();
+      if(path.back() == 'v')
+      {
+         analyse->LoadPointsFromFileCSV(path);
+      }else // --- Open fcs files - using python script for convert fcs to csv, and read csv.  
+      {
+
+      }
+
   }else
   {
       wxMessageDialog *dial = new wxMessageDialog(NULL, 

@@ -1,5 +1,4 @@
 import fcsparser
-
 meta = 0
 data = 0
 
@@ -12,7 +11,7 @@ def loadFCS(path):
 def getColumnByName(col_name):
     
     if(meta != 0 and data != 0):
-        return data[col_name] 
+        return data[col_name].tolist() 
     else:
         return -1  
 

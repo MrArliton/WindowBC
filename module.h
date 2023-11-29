@@ -14,8 +14,6 @@
 #include "src/gui/Constants.h"
 
 
-//Utils
-#include "src/PyExecutor.h"
 // Analyse 
 #include "src/AnalyseSystem.h"
 // Panels

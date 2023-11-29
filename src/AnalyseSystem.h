@@ -49,7 +49,7 @@ class AnalyseSystem
         wxWindow* parent; // --- For sending events
         CalculateClasterizationThread* thread = nullptr;
 
-        std::vector<claster> MakeClastersFromPoints(const std::vector<point> points); 
+        std::vector<claster> MakeClastersFromPoints(const std::vector<point>& points); 
     public: 
         AnalyseSystem(wxWindow* parent) : parent(parent) {};
 
@@ -60,7 +60,8 @@ class AnalyseSystem
         ~AnalyseSystem() = default;
 
         void LoadPointsFromFileCSV(const std::string& path);
-        
+        void LoadClastersFromPoints(const std::vector<point> points,const std::string& path);
+
         void StartClasterization(lfloat attraction_coef, lfloat trend_coef);
         void RevertClasterization();
 

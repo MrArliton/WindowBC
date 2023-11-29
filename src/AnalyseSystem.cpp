@@ -1,5 +1,5 @@
 
-std::vector<claster> AnalyseSystem::MakeClastersFromPoints(const std::vector<point> points)
+std::vector<claster> AnalyseSystem::MakeClastersFromPoints(const std::vector<point>& points)
 {
     std::vector<claster> clasters;
     clasters.reserve(points.size());
@@ -28,6 +28,25 @@ void AnalyseSystem::LoadPointsFromFileCSV(const std::string& path)
     evt.SetClientData(&cInfo.clasters);
     parent->ProcessWindowEvent(evt);
 }
+
+ void AnalyseSystem::LoadClastersFromPoints(const std::vector<point> points,const std::string& path)
+ {
+    if(thread)
+    {
+        thread->Delete();
+        thread = nullptr;
+
+        updateProgress(0);
+    }
+
+    cInfo.pathToPoints = path;
+    cInfo.clasters = std::move(MakeClastersFromPoints(points));
+    wxCommandEvent evt(AnalyseSystemEvent, aEndLoadOfPointsEvtID);
+    evt.SetClientData(&cInfo.clasters);
+    parent->ProcessWindowEvent(evt);
+
+ }
+
 
 void AnalyseSystem::StartClasterization(lfloat attraction_coef, lfloat trend_coef)
 {
