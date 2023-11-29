@@ -26,17 +26,17 @@ private:
 
             dc.SetPen(wxPen( DefaultColorForDrawingAreaBorder, DefaultWidthForDrawingAreaBorder ));
 
-            // Draw Box
+            // --- Draw Box
             dc.DrawLine(start_x, start_y, start_x, start_y - drawing_area_size);    
             dc.DrawLine(start_x, start_y, start_x + drawing_area_size, start_y);
             dc.DrawLine(start_x, start_y - drawing_area_size, start_x + drawing_area_size , start_y - drawing_area_size);
             dc.DrawLine(start_x + drawing_area_size ,start_y, start_x + drawing_area_size, start_y - drawing_area_size);
-            /// Draw a values on graph
+            /// --- Draw a values on graph
             const auto margin_axis = FromDIP(5);
             const auto max_sized_text = wxString::Format(wxT("%.0f"), static_cast<float>(GraphWidth)); 
             dc.SetFont(wxFont((drawing_area_size/(AmountOfAxisValues))/max_sized_text.Length(), wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
             const auto text_max_width = dc.GetTextExtent(max_sized_text).GetWidth();
-            //Horizontal
+            // --- Horizontal
             for(size_t i = 0;i < AmountOfAxisValues;i++)
             {
                 auto text = wxString::Format(wxT("%.0f"), static_cast<float>(i*(GraphWidth/(AmountOfAxisValues-1))));  
@@ -47,7 +47,7 @@ private:
                 dc.SetPen(wxPen( DefaultColorForDrawingAreaBorder, DefaultWidthForDrawingAreaBorder ));
             }
             dc.SetFont(wxFont(std::min(start_x/max_sized_text.Length(),static_cast<size_t>(dc.GetFont().GetPointSize())), wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
-            //Vertical
+            // --- Vertical
             for(size_t i = 1;i < AmountOfAxisValues;i++)
             {
                 auto text = wxString::Format(wxT("%.0f"), static_cast<float>(i*(GraphHeight/(AmountOfAxisValues-1))));  
@@ -58,7 +58,7 @@ private:
                 dc.SetPen(wxPen( DefaultColorForDrawingAreaBorder, DefaultWidthForDrawingAreaBorder ));
             }   
             //
-            //Draw points
+            // --- Draw points
             if(colorMode)
             {
                 dc.SetPen(wxPen( DefaultColorForDrawingPoint, PointsWidth ));

@@ -75,7 +75,7 @@ void AnalyseSystem::endCommand()
 void AnalyseSystem::updateProgress(lfloat progress)
 {
     wxCommandEvent evt(AnalyseSystemEvent, aUpdateViewEvtID);
-    evt.SetClientData(new lfloat(progress)); // Free lfloat* in CommandFunction
+    evt.SetClientData(new lfloat(progress)); // --- Free lfloat* in CommandFunction
     parent->ProcessWindowEvent(evt);   
 }
 
@@ -83,7 +83,7 @@ void AnalyseSystem::updateProgress(lfloat progress)
 void CalculateClasterizationThread::Progress(lfloat prog)
 {
     wxCommandEvent evt(AnalyseSystemEvent, aUpdateViewEvtID);
-    evt.SetClientData(new lfloat(prog)); // Don't forget free!!!!
+    evt.SetClientData(new lfloat(prog)); // --- Don't forget free!!!!
     wxPostEvent(parent, evt);
 }
 

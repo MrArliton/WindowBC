@@ -2,6 +2,7 @@
 #include <optional>
 #include <memory>
 #include <unordered_map>
+#include <string> 
 // External Libs
 #include "libs/ClastBC/module.h"
 #include <wx/wx.h>
@@ -13,6 +14,8 @@
 #include "src/gui/Constants.h"
 
 
+//Utils
+#include "src/PyExecutor.h"
 // Analyse 
 #include "src/AnalyseSystem.h"
 // Panels
