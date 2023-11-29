@@ -29,7 +29,7 @@ add_executable(py_exec_test ./py_executor_test.cpp)
 target_link_libraries(py_exec_test Python3::Python)
 
 #Prepary for testing
-copy_directory(${CMAKE_SOURCE_DIR}/tests/tests_files ${CMAKE_BINARY_DIR}/test_files)
+copy_directory(${CMAKE_SOURCE_DIR}/tests/tests_files ${PROJECT_BINARY_DIR}/test_files)
 
 add_test(NAME py_exec_test
          COMMAND py_exec_test)

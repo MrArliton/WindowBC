@@ -3,7 +3,7 @@ void MainFrame::loadPoints()
 {
 
     wxFileDialog* openFileDialog = new wxFileDialog(NULL,  _("Open CSV file"), "", "",
-        "CSV files (*.csv)|*.csv", wxFD_OPEN|wxFD_FILE_MUST_EXIST);
+        "CSV/FCS files (*.csv)|*.csv|*.fcs|(*.fcs)", wxFD_OPEN|wxFD_FILE_MUST_EXIST);
 
 
 	if (openFileDialog->ShowModal() == wxID_OK) 

@@ -34,5 +34,6 @@ int main()
    {
         std::cout << "-- Third test failed! --\n";
    }
+   
    pyexec::pyFinalize();
 }
