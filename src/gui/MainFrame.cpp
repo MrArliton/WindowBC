@@ -12,11 +12,13 @@ void MainFrame::loadPoints()
       if(path.back() == 'v')
       {
          analyse->LoadPointsFromFileCSV(path);
-      }else // --- Open fcs files - using python script for convert fcs to csv, and read csv.  
+      }else // --- Open fcs files - using python script for convert fcs to csv, and read csv.  ---
       {
-
+         path = '\"'+path+'\"'; // --- For correct reading path argument in python script --- 
+         a_util::execPythonScript("./scripts/fcs_loader.py", {path,  '\"'+a_util::getCurrentDirectory()+"/temp/temp.csv\""});
+         std::system("md temp");
+         analyse->LoadPointsFromFileCSV("./temp/temp.csv");
       }
-
   }else
   {
       wxMessageDialog *dial = new wxMessageDialog(NULL, 
@@ -26,25 +28,10 @@ void MainFrame::loadPoints()
 
 	// Clean up after ourselves
 	openFileDialog->Destroy();
-}/*
-void MainFrame::clasterizeFunctor::operator() (wxCommandEvent & evt)
-{   
-  //  lfloat a_coef = parent->toolbarRightPanel->GetAttractionCoeficient().value();
-  //  lfloat t_coef = parent->toolbarRightPanel->GetTrendCoeficient().value();
-  //  if(!parent->drawingPanel->GetClasters().empty()){
- //       parent->drawingPanel->SetClasters(u_generic_linkage(parent->drawingPanel->GetClasters(), a_coef, t_coef));
- //       parent->drawingPanel->SetColorMode(MultiColorMode);
- //       parent->drawingPanel->Paint();
-  //  }
 }
-void MainFrame::revertFunctor::operator() (wxCommandEvent & evt)
-{
-  //  parent->drawingPanel->SetClasters(parent->originalClasters);
-  //  parent->drawingPanel->Paint();
-}
-*/
 void MainFrame::OnCommand(wxCommandEvent & evt)
 {
+   wxLogGeneric(wxLOG_Message, a_util::string_format("Command: %d", evt.GetId()).c_str()); 
    switch(evt.GetId()){
     case aStartClasterizationEvtID:
       {

@@ -221,10 +221,13 @@ std::vector<claster> u_generic_linkage(std::vector<claster> clasters, lfloat att
 {
 
     dissimilarities diss = u_calculate_start_dissimilarities(clasters, attraction_coef, thread);
+    // For Thread working with wxWidgets
     if(thread->TestDestroy())
     {
         return {};
     }
+    //
+
     // S - array of available claster's indexes
     std::vector<size_t> indexes;
     indexes.reserve(clasters.size());
@@ -266,6 +269,7 @@ std::vector<claster> u_generic_linkage(std::vector<claster> clasters, lfloat att
     const size_t s_amount = clasters.size()/100 + 1; 
     while(!u_stoping_criteria(last_min_distances, trend_coef) && indexes.size() > 1)
     {
+        // For Thread working with wxWidgets
         if(thread->TestDestroy())
         {
             return {};
@@ -274,6 +278,7 @@ std::vector<claster> u_generic_linkage(std::vector<claster> clasters, lfloat att
         {
             thread->Progress(static_cast<lfloat>(iteration)/static_cast<lfloat>(clasters.size()));
         }
+        //
         size_t a = p_q.argmin();
         size_t b = n_nghbr[a];
         lfloat mn_d = mindist[a];
@@ -377,7 +382,10 @@ std::vector<claster> u_generic_linkage(std::vector<claster> clasters, lfloat att
     {
         n_clasters.push_back(std::move(clasters[i]));
     }
+
+    // For Thread working with wxWidgets
     thread->Progress(1);
+    //
     return n_clasters;
 }
 

@@ -1,7 +1,7 @@
 
 #include <fstream>
 
-std::optional<std::vector<claster>> convert_csv_to_clasters(std::string path, size_t amount_points = 100000000, char delimiter = ',', size_t arg_1 = 1, size_t arg_2 = 2){
+std::optional<std::vector<claster>> convert_csv_to_clasters(std::string path, size_t amount_points = 100000000, char delimiter = ',', size_t arg_1 = 0, size_t arg_2 = 1){
     std::ifstream file(path);
     if(!file.is_open()){
         std::cerr << "CSV file isn't open: " << path << std::endl;

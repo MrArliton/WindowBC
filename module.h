@@ -3,7 +3,7 @@
 #include <memory>
 #include <unordered_map>
 #include <string> 
-// External Libs
+// Extenal Libs
 #include "libs/ClastBC/module.h"
 #include <wx/wx.h>
 #include <wx/gbsizer.h>
@@ -12,7 +12,7 @@
 #include <wx/settings.h>
 //
 #include "src/gui/Constants.h"
-
+#include "src/utils.h"
 
 // Analyse 
 #include "src/AnalyseSystem.h"
