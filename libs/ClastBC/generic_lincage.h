@@ -1,13 +1,13 @@
-// Generic lincage  - Centroid Clasterization (We use Euclidian distance) 
+// Generic lincage - Centroid Clasterization (We use Euclidian distance) 
 
-// -- binary heap
+// --- Binary heap ---
 struct binary_heap
 {
     private:
 
     lfloat* A;
-    size_t* I; // find for default index in A  
-    size_t* R; // find for default index in A  
+    size_t* I; // --- Find for default index in A   ---
+    size_t* R; 
     size_t size = 0; 
 
     public:
@@ -52,7 +52,7 @@ struct binary_heap
 
     void remove(size_t idx)
     {
-        // Remove an element from the heap.
+        // --- Remove an element from the heap. ---
         --size;
         R[I[size]] = R[idx];
         I[R[idx]] = I[size];
@@ -156,7 +156,7 @@ lfloat u_calculate_disimilarity(const point& point1,const point& point2, lfloat 
 
     return std::sqrt(otv) - attraction_coef;
 }
-// Class - Thread (must have TestDelete - Says about terminating thread)
+// --- Class - Thread (must have TestDelete - Says about terminating thread)
 template < typename Class >
 dissimilarities u_calculate_start_dissimilarities(const std::vector<claster>& clasters, lfloat attraction_coef, Class* thread)
 {
@@ -182,7 +182,7 @@ dissimilarities u_calculate_start_dissimilarities(const std::vector<claster>& cl
 }
 
 
-bool u_stoping_criteria(const std::vector<lfloat>& distances, lfloat trend_coef) // Calculating criteria of stopping upgmc method 
+bool u_stoping_criteria(const std::vector<lfloat>& distances, lfloat trend_coef) // --- Calculating criteria of stopping upgmc method 
 { 
     const std::vector<lfloat>& last_min_distances = distances;
 
@@ -221,14 +221,14 @@ std::vector<claster> u_generic_linkage(std::vector<claster> clasters, lfloat att
 {
 
     dissimilarities diss = u_calculate_start_dissimilarities(clasters, attraction_coef, thread);
-    // For Thread working with wxWidgets
+    // --- For Thread working with wxWidgets ---
     if(thread->TestDestroy())
     {
         return {};
     }
     //
 
-    // S - array of available claster's indexes
+    // --- S - array of available claster's indexes ---
     std::vector<size_t> indexes;
     indexes.reserve(clasters.size());
     for(size_t i = 0;i < clasters.size();i++){
@@ -239,7 +239,7 @@ std::vector<claster> u_generic_linkage(std::vector<claster> clasters, lfloat att
     n_nghbr.resize(clasters.size()-1);
     std::vector<lfloat> mindist;
     mindist.resize(clasters.size()-1); 
-    // Initialization of n_nghbr, mindist
+    // --- Initialization of n_nghbr, mindist ---
     for(auto i:indexes)
     {
         if(i!=indexes.back())
@@ -259,7 +259,7 @@ std::vector<claster> u_generic_linkage(std::vector<claster> clasters, lfloat att
         }
     }
     ////
-    // Initialization priority_queue of indices in S \ {N − 1}, keys are in mindist
+    // --- Initialization priority_queue of indices in S \ {N − 1}, keys are in mindist ---
     binary_heap p_q(mindist);
     p_q.heapify();
 
@@ -269,7 +269,7 @@ std::vector<claster> u_generic_linkage(std::vector<claster> clasters, lfloat att
     const size_t s_amount = clasters.size()/100 + 1; 
     while(!u_stoping_criteria(last_min_distances, trend_coef) && indexes.size() > 1)
     {
-        // For Thread working with wxWidgets
+        // --- For Thread working with wxWidgets ---
         if(thread->TestDestroy())
         {
             return {};
@@ -285,7 +285,7 @@ std::vector<claster> u_generic_linkage(std::vector<claster> clasters, lfloat att
 
         while(mn_d != diss[a][b])
         {
-            // find new n_nghbr
+            // --- Find new n_nghbr ---
             mn_d = std::numeric_limits<lfloat>::max();
             for(size_t i:indexes)
             {
@@ -298,7 +298,7 @@ std::vector<claster> u_generic_linkage(std::vector<claster> clasters, lfloat att
             n_nghbr[a] = b;
             mindist[a] = mn_d;
             p_q.update(a,mn_d);
-            // Update a,b
+            // --- Update a,b ---
             a = p_q.argmin();  
             b = n_nghbr[a];
             mn_d = mindist[a];
@@ -308,7 +308,7 @@ std::vector<claster> u_generic_linkage(std::vector<claster> clasters, lfloat att
         p_q.pop();
         indexes.erase(std::lower_bound(indexes.begin(),indexes.end(),a)); // Erase a
 
-        //Update dissimilarities
+        // --- Update dissimilarities ---
         const size_t sz_a = clasters[a].points.size();
         const size_t sz_b = clasters[b].points.size();
         const size_t buff = sz_a+sz_b;
@@ -316,7 +316,7 @@ std::vector<claster> u_generic_linkage(std::vector<claster> clasters, lfloat att
         {
             if(i!=b)
             {
-                diss[b][i] = diss[i][b] = // WMA Formula for update distances
+                diss[b][i] = diss[i][b] = // --- WMA Formula for update distances ---
                 std::sqrt(((sz_a * diss[a][i]*diss[a][i] + sz_b * diss[b][i]*diss[b][i])/
                 (buff))
                  + 
@@ -383,7 +383,7 @@ std::vector<claster> u_generic_linkage(std::vector<claster> clasters, lfloat att
         n_clasters.push_back(std::move(clasters[i]));
     }
 
-    // For Thread working with wxWidgets
+    // --- For Thread working with wxWidgets ---
     thread->Progress(1);
     //
     return n_clasters;

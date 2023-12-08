@@ -3,7 +3,7 @@
 #include <memory>
 #include <unordered_map>
 #include <string> 
-// Extenal Libs
+// --- Extenal Libs --- 
 #include "libs/ClastBC/module.h"
 #include <wx/wx.h>
 #include <wx/gbsizer.h>
@@ -14,9 +14,9 @@
 #include "src/gui/Constants.h"
 #include "src/utils.h"
 
-// Analyse 
+// --- Analyse --- 
 #include "src/AnalyseSystem.h"
-// Panels
+// --- Panels --- 
 #include "src/gui/panels/mToolbarPanel.h"
 #include "src/gui/panels/mRightToolbarPanel.h"    
 #include "src/gui/panels/mLeftToolbarPanel.h"

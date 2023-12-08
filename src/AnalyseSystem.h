@@ -1,5 +1,5 @@
 
-// Takes events from window parts and work with data, make events for visualizations.
+// --- Takes events from window parts and work with data, make events for visualizations. --- 
 wxDECLARE_EVENT(AnalyseSystemEvent, wxCommandEvent);
 wxDEFINE_EVENT(AnalyseSystemEvent, wxCommandEvent);
 

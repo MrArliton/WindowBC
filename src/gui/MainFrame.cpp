@@ -15,9 +15,11 @@ void MainFrame::loadPoints()
       }else // --- Open fcs files - using python script for convert fcs to csv, and read csv.  ---
       {
          path = '\"'+path+'\"'; // --- For correct reading path argument in python script --- 
+         try{
          a_util::execPythonScript("./scripts/fcs_loader.py", {path,  '\"'+a_util::getCurrentDirectory()+"/temp/temp.csv\""});
          std::system("md temp");
          analyse->LoadPointsFromFileCSV("./temp/temp.csv");
+         } 
       }
   }else
   {
@@ -26,13 +28,16 @@ void MainFrame::loadPoints()
       dial->ShowModal();
   }
 
-	// Clean up after ourselves
+	// --- Clean up after ourselves ---
 	openFileDialog->Destroy();
 }
 void MainFrame::OnCommand(wxCommandEvent & evt)
 {
-   wxLogGeneric(wxLOG_Message, a_util::string_format("Command: %d", evt.GetId()).c_str()); 
-   switch(evt.GetId()){
+  /// --- Log ---
+  if(evt.GetId() != aUpdateViewEvtID)  
+    wxLogGeneric(wxLOG_Message, a_util::string_format("Command: %d", evt.GetId()).c_str()); 
+ 
+  switch(evt.GetId()){
     case aStartClasterizationEvtID:
       {
         auto options = panel->GetClasterizationOptions().value();
@@ -77,7 +82,7 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
 {   
     analyse = std::unique_ptr<AnalyseSystem>(new AnalyseSystem(this));
 
-    // Sizers and MainPanel
+    // --- Sizers and MainPanel ---
     const auto margin = FromDIP(1);
 
     mainSizer = new wxBoxSizer(wxVERTICAL);

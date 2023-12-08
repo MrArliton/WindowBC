@@ -12,7 +12,7 @@
 #define ConsolePanelSize wxSize(FromDIP(100),FromDIP(75))
 
 
-//Clasterization options
+// --- Clasterization options ---
 #define DefaultColorForDrawingPoint wxColor(40,40,40)
 #define DefaultColorForDrawingAreaBorder wxColor(255,255,255)
 #define DefaultWidthForDrawingAreaBorder FromDIP(2)
@@ -20,5 +20,5 @@
 #define GraphWidth 280000l
 #define GraphHeight 280000l
 #define AmountOfAxisValues 10 
-//Process of clasterization
+// --- Process of clasterization ---
 #define MaxPointsForLoading 300000

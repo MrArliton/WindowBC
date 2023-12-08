@@ -16,24 +16,24 @@ public:
         auto sizer = new wxGridBagSizer(margin, margin);    
         //---------------------- 
 
-        // General panels
-        //Drawing
+        // --- General panels --- 
+        // --- Drawing
         drawingPanel = new mDrawingPanel(this, wxID_ANY);
         drawingPanel->SetBackgroundColour(BackgroundPanelDefaultColor);
 
-        // Top Toolbar
+        // ---  Top Toolbar
         toolbarPanel = new mToolbarPanel(this, wxID_ANY);
         toolbarPanel->SetBackgroundColour(BackgroundPanelDefaultColor);
                
-        // Left Toolbar
+        // --- Left Toolbar
         toolbarLeftPanel = new mLeftToolbarPanel(this, wxID_ANY);
         toolbarLeftPanel->SetBackgroundColour(BackgroundPanelDefaultColor);
 
-        // Right Toolbar
+        // --- Right Toolbar
         toolbarRightPanel = new mRightToolbarPanel(this, wxID_ANY);
         toolbarRightPanel->SetBackgroundColour(BackgroundPanelDefaultColor);
         
-        // Bottom console 
+        // --- Bottom console 
         consolePanel = new wxPanel(this, wxID_ANY);
         consolePanel->SetMinSize(ConsolePanelSize);
         consolePanel->SetBackgroundColour(BackgroundPanelDefaultColor);
@@ -50,7 +50,7 @@ public:
         
 
 
-        // Add to sizer
+        // --- Add to sizer
         sizer->Add(drawingPanel,{1,1}, {1,1}, wxEXPAND);    
         sizer->Add(toolbarLeftPanel,{1,0}, {2,1}, wxEXPAND | wxALIGN_LEFT);
         sizer->Add(toolbarRightPanel,{1,2}, {2,1}, wxEXPAND | wxALIGN_RIGHT);

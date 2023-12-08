@@ -5,10 +5,10 @@ class MainFrame : public wxFrame
     wxBoxSizer* mainSizer;
 
     std::unique_ptr<AnalyseSystem> analyse;
-    //Commands
+    // --- Commands ---
     void loadPoints();    
 
-    //Command event
+    // --- Command event ---
     void OnCommand(wxCommandEvent & evt);
 
     public:
