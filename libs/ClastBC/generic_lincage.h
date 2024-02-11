@@ -142,114 +142,92 @@ struct binary_heap
     }
 };
 
-lfloat u_calculate_disimilarity(const point& point1,const point& point2, lfloat attraction_coef)
-{
+ldouble u_calculate_disimilarity(const point& point1,const point& point2, ldouble attraction_coef) {
     assert(point1.size() == point2.size());
 
-    lfloat otv = 0, buff;
+    ldouble otv = 0, buff;
 
-    for(int i = 0; i < point1.size();i++)
-    {
+    for(int i = 0; i < point1.size();i++){
         buff = point1[i]-point2[i];
         otv += buff*buff;
     }
 
     return std::sqrt(otv) - attraction_coef;
 }
-// --- Class - Thread (must have TestDelete - Says about terminating thread)
-template < typename Class >
-dissimilarities u_calculate_start_dissimilarities(const std::vector<claster>& clasters, lfloat attraction_coef, Class* thread)
-{
-    size_t width = clasters.size();
+
+dissimilarities u_calculate_start_dissimilarities(const std::vector<point>& points, ldouble attraction_coef){
+    size_t width = points.size();
      
     assert(width > 0);
 
     dissimilarities dmat(width);
-    for(int i = 0;i < width;i++)
-    {
-        if(thread->TestDestroy()) // If Thread is terminated 
-        {
-            break;
-        }
-
+    for(int i = 0;i < width;i++){
         dmat[i].resize(width);
-        for(int j = 0;j < i;j++)
-        {
-            dmat[j][i] = dmat[i][j] = u_calculate_disimilarity(clasters[i].points[0],clasters[j].points[0], attraction_coef);
+        for(int j = 0;j < i;j++){
+            dmat[j][i] = dmat[i][j] = u_calculate_disimilarity(points[i],points[j], attraction_coef);
         }
     }
     return dmat;
 }
 
 
-bool u_stoping_criteria(const std::vector<lfloat>& distances, lfloat trend_coef) // --- Calculating criteria of stopping upgmc method 
-{ 
-    const std::vector<lfloat>& last_min_distances = distances;
+bool u_stopingCriteria(const std::vector<ldouble>& distances, ldouble trend_coef){ // Calculating criteria of stopping upgmc method 
+    const std::vector<ldouble>& last_min_distances = distances;
 
-    if(last_min_distances.size() < 5)
-    {
+    if(last_min_distances.size() < 5){
         return false;    
     }
     
     size_t i = last_min_distances.size()-1;
-    lfloat y_3 = last_min_distances[i];
+    ldouble y_3 = last_min_distances[i];
     i--;
-    for(;last_min_distances[i] > y_3;i--){ if(i>last_min_distances.size()) {return false;} }
-    lfloat y_2 = last_min_distances[i]; 
+    for(;last_min_distances[i] > y_3;i--){ if(i>last_min_distances.size()){return false;}}
+    ldouble y_2 = last_min_distances[i]; 
     i--;
-    for(;last_min_distances[i] > y_2;i--){ if(i>last_min_distances.size()) {return false;} }
-    lfloat y_1 = last_min_distances[i];
+    for(;last_min_distances[i] > y_2;i--){ if(i>last_min_distances.size()){return false;}}
+    ldouble y_1 = last_min_distances[i];
     i--;
-    for(;last_min_distances[i] > y_1;i--){ if(i>last_min_distances.size()) {return false;} }
-    lfloat y_0 = last_min_distances[i];
+    for(;last_min_distances[i] > y_1;i--){ if(i>last_min_distances.size()){return false;}}
+    ldouble y_0 = last_min_distances[i];
     
     y_3 = y_3 - y_0 + (i+3)*trend_coef;
     y_2 = y_2 - y_0 + (i+2)*trend_coef;
     y_1 = y_1 - y_0 + (i+1)*trend_coef;
 
-    lfloat criteria = 1.0/245.0 * (19.0 * (y_1 * y_1) - 11.0 * (y_2 * y_2) + 41.0 * (y_3 * y_3) + 12.0 * y_1 * y_2 - 64.0 * y_1 * y_3 - 46.0 * y_2 * y_3);
+    ldouble criteria = 1.0/245.0 * (19.0 * (y_1 * y_1) - 11.0 * (y_2 * y_2) + 41.0 * (y_3 * y_3) + 12.0 * y_1 * y_2 - 64.0 * y_1 * y_3 - 46.0 * y_2 * y_3);
 
-    if(criteria <= 0)
-    {
+    if(criteria <= 0){
         return false;
     }
     return true;      
 }
 
-template < typename Class >
-std::vector<claster> u_generic_linkage(std::vector<claster> clasters, lfloat attraction_coef, lfloat trend_coef, Class* thread)  
-{
-
-    dissimilarities diss = u_calculate_start_dissimilarities(clasters, attraction_coef, thread);
-    // --- For Thread working with wxWidgets ---
-    if(thread->TestDestroy())
-    {
-        return {};
-    }
-    //
-
-    // --- S - array of available claster's indexes ---
+template<class u_thread>
+std::vector<std::tuple<size_t, size_t, ldouble>> u_generic_linkage(std::vector<point>& points, ldouble attraction_coef, u_thread* thread){
+    std::vector<std::tuple<size_t, size_t, ldouble>> dendrogram;
+    std::vector<size_t> sizes(points.size(),1);
+    GEN_OUT("Calculate dissimilarities");
+    dissimilarities diss = u_calculate_start_dissimilarities(points, attraction_coef);
+    GEN_OUT("End calculate dissimilarities");
+    // S - array of available claster's indexes
     std::vector<size_t> indexes;
-    indexes.reserve(clasters.size());
-    for(size_t i = 0;i < clasters.size();i++){
+    indexes.reserve(points.size());
+    for(size_t i = 0;i < points.size();i++){
         indexes.push_back(i);
     } 
     ////
     std::vector<size_t> n_nghbr;
-    n_nghbr.resize(clasters.size()-1);
-    std::vector<lfloat> mindist;
-    mindist.resize(clasters.size()-1); 
-    // --- Initialization of n_nghbr, mindist ---
-    for(auto i:indexes)
-    {
-        if(i!=indexes.back())
-        {
-            lfloat mn_val = std::numeric_limits<lfloat>::max();
+    n_nghbr.resize(points.size()-1);
+    std::vector<ldouble> mindist;
+    mindist.resize(points.size()-1); 
+    GEN_OUT("Init n_nghbr, mindist");
+    // Initialization of n_nghbr, mindist
+    for(auto i:indexes){
+        if(i!=indexes.back()){
+            ldouble mn_val = std::numeric_limits<ldouble>::max();
             size_t index = i+1;  
-            for(int j = index; j < diss.size();j++)
-            {
-                if(mn_val > diss[i][j])
-                {
+            for(int j = index; j < diss.size();j++){
+                if(mn_val > diss[i][j]){
                     mn_val = diss[i][j];
                     index = j;
                 }
@@ -258,17 +236,20 @@ std::vector<claster> u_generic_linkage(std::vector<claster> clasters, lfloat att
             mindist[i] = mn_val; 
         }
     }
+    GEN_OUT("End init n_nghbr, mindist");
     ////
-    // --- Initialization priority_queue of indices in S \ {N − 1}, keys are in mindist ---
+    GEN_OUT("Init priority_queue");
+    // Initialization priority_queue of indices in S \ {N − 1}, keys are in mindist
     binary_heap p_q(mindist);
     p_q.heapify();
+    GEN_OUT("End init priority_queue");
 
-    std::vector<lfloat> last_min_distances;
-    last_min_distances.reserve(clasters.size());
+    std::vector<ldouble> last_min_distances;
+    last_min_distances.reserve(points.size());
+
     size_t iteration = 0;
     const size_t s_amount = clasters.size()/100 + 1; 
-    while(!u_stoping_criteria(last_min_distances, trend_coef) && indexes.size() > 1)
-    {
+    while(indexes.size() > 1){
         // --- For Thread working with wxWidgets ---
         if(thread->TestDestroy())
         {
@@ -281,16 +262,13 @@ std::vector<claster> u_generic_linkage(std::vector<claster> clasters, lfloat att
         //
         size_t a = p_q.argmin();
         size_t b = n_nghbr[a];
-        lfloat mn_d = mindist[a];
+        ldouble mn_d = mindist[a];
 
-        while(mn_d != diss[a][b])
-        {
-            // --- Find new n_nghbr ---
-            mn_d = std::numeric_limits<lfloat>::max();
-            for(size_t i:indexes)
-            {
-                if(i > a && mn_d > diss[a][i])
-                {
+        while(mn_d != diss[a][b]){
+            // Find new n_nghbr
+            mn_d = std::numeric_limits<ldouble>::max();
+            for(size_t i:indexes){
+                if(i > a && mn_d > diss[a][i]){
                     mn_d = diss[a][i];
                     b = i;
                 }            
@@ -298,7 +276,7 @@ std::vector<claster> u_generic_linkage(std::vector<claster> clasters, lfloat att
             n_nghbr[a] = b;
             mindist[a] = mn_d;
             p_q.update(a,mn_d);
-            // --- Update a,b ---
+            // Update a,b
             a = p_q.argmin();  
             b = n_nghbr[a];
             mn_d = mindist[a];
@@ -306,17 +284,20 @@ std::vector<claster> u_generic_linkage(std::vector<claster> clasters, lfloat att
         }
         last_min_distances.push_back(mn_d);
         p_q.pop();
+        // Saving step in dendrogram
+        dendrogram.push_back(std::make_tuple(a, // Index of first claster
+        b, // Index of second claster 
+        mn_d));// Dissimilarity between clasters
+        
         indexes.erase(std::lower_bound(indexes.begin(),indexes.end(),a)); // Erase a
 
-        // --- Update dissimilarities ---
-        const size_t sz_a = clasters[a].points.size();
-        const size_t sz_b = clasters[b].points.size();
+        // Update dissimilarities
+        const size_t sz_a = sizes[a];
+        const size_t sz_b = sizes[b];
         const size_t buff = sz_a+sz_b;
-        for(size_t i:indexes)
-        {
-            if(i!=b)
-            {
-                diss[b][i] = diss[i][b] = // --- WMA Formula for update distances ---
+        for(size_t i:indexes){
+            if(i!=b){
+                diss[b][i] = diss[i][b] = // WMA Formula for update distances
                 std::sqrt(((sz_a * diss[a][i]*diss[a][i] + sz_b * diss[b][i]*diss[b][i])/
                 (buff))
                  + 
@@ -325,46 +306,36 @@ std::vector<claster> u_generic_linkage(std::vector<claster> clasters, lfloat att
                 (buff*buff))) - attraction_coef*sz_a*sz_b;
             }
         }
+        sizes[b] += sizes[a];
         ////
         //
-        for(size_t i:indexes)
-        {
-            if(i < a)
-            {
-                if(n_nghbr[i] == a)
-                {
+        for(size_t i:indexes){
+            if(i < a){
+                if(n_nghbr[i] == a){
                     n_nghbr[i] = b;
                 }
-            }else
-            {
+            }else{
                 break;
             }
         }
         //
-        for(size_t i:indexes)
-        {
-            if(i < b)
-            {
-                if(diss[i][b] < mindist[i])
-                {
+        for(size_t i:indexes){
+            if(i < b){
+                if(diss[i][b] < mindist[i]){
                      n_nghbr[i] = b;
                      p_q.update(i,diss[i][b]);
                      mindist[i] = diss[i][b];   
                 }        
-            }else
-            {
+            }else{
                 break;
             }
         }
-        if(b != indexes.back())
-        {
+        if(b != indexes.back()){
             auto iter = std::lower_bound(indexes.begin(), indexes.end(), b);
             size_t index = *std::next(iter);
-            mn_d = std::numeric_limits<lfloat>::max(); 
-            for(iter++;iter!=indexes.end();iter++)
-            {
-                if(mn_d > diss[b][*iter])
-                {
+            mn_d = std::numeric_limits<ldouble>::max(); 
+            for(iter++;iter!=indexes.end();iter++){
+                if(mn_d > diss[b][*iter]){
                     index = *iter;
                     mn_d = diss[b][index];
                 }
@@ -373,19 +344,33 @@ std::vector<claster> u_generic_linkage(std::vector<claster> clasters, lfloat att
             mindist[b] = mn_d;
             p_q.update(b,mn_d);
         }
-        clasters[b].points.insert(clasters[b].points.end(),std::make_move_iterator(clasters[a].points.begin()),std::make_move_iterator(clasters[a].points.end()));    
-        iteration++;
     }
-    std::vector<claster> n_clasters;
-    n_clasters.reserve(indexes.size());
-    for(auto i:indexes)
-    {
-        n_clasters.push_back(std::move(clasters[i]));
-    }
-
     // --- For Thread working with wxWidgets ---
     thread->Progress(1);
     //
-    return n_clasters;
+    return dendrogram;
+}
+
+std::vector<size_t> make_markers_using_markov_stopping(std::vector<point>& points, std::vector<std::tuple<size_t, size_t, ldouble>> dendrogram, ldouble trend_coef)  
+{
+    std::vector<ldouble> distances;
+    distances.reserve(dendrogram.size());
+    std::vector<size_t> markers(points.size());
+    for(int i = 1;i < markers.size();i++)
+    {
+        markers[i - 1] = i;
+    }
+
+    auto iter = dendrogram.begin(); 
+    while(iter != dendrogram.end() && !u_stopingCriteria(distances, trend_coef))
+    {
+        size_t first = std::get<0>(*iter);
+        size_t second =  std::get<1>(*iter);
+        distances.push_back(std::get<2>(*iter));
+        markers[first] = markers[second];
+        iter = std::next(iter);
+    }
+
+    return markers;
 }
 

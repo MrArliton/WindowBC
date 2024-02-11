@@ -1,16 +1,13 @@
 
-std::vector<claster> AnalyseSystem::MakeClastersFromPoints(const std::vector<point>& points)
+
+void AnalyseSystem::closeThread()
 {
-    std::vector<claster> clasters;
-    clasters.reserve(points.size());
-    for(auto pnt:points)
-    {   
-        clasters.emplace_back(pnt);
+    if(thread)
+    {
+        thread->Delete();
+        thread = nullptr;
     }
-
-    return clasters;
-} 
-
+}
 
 void AnalyseSystem::LoadPointsFromFileCSV(const std::string& path)
 {
@@ -22,30 +19,14 @@ void AnalyseSystem::LoadPointsFromFileCSV(const std::string& path)
         updateProgress(0);
     }
 
-    cInfo.pathToPoints = path;
-    cInfo.clasters = std::move(convert_csv_to_clasters(path, MaxPointsForLoading).value());
+    points = std::move(convert_csv_to_points(path, MaxPointsForLoading).value());
     wxCommandEvent evt(AnalyseSystemEvent, aEndLoadOfPointsEvtID);
-    evt.SetClientData(&cInfo.clasters);
+    
+    a_utils::setDataForHandle(evt, &points, a_utils::A_LIVE_MODE);
+    
     parent->ProcessWindowEvent(evt);
 }
 
- void AnalyseSystem::LoadClastersFromPoints(const std::vector<point> points,const std::string& path)
- {
-    if(thread)
-    {
-        thread->Delete();
-        thread = nullptr;
-
-        updateProgress(0);
-    }
-
-    cInfo.pathToPoints = path;
-    cInfo.clasters = std::move(MakeClastersFromPoints(points));
-    wxCommandEvent evt(AnalyseSystemEvent, aEndLoadOfPointsEvtID);
-    evt.SetClientData(&cInfo.clasters);
-    parent->ProcessWindowEvent(evt);
-
- }
 
 
 void AnalyseSystem::StartClasterization(lfloat attraction_coef, lfloat trend_coef)
@@ -96,30 +77,5 @@ void AnalyseSystem::updateProgress(lfloat progress)
     wxCommandEvent evt(AnalyseSystemEvent, aUpdateViewEvtID);
     evt.SetClientData(new lfloat(progress)); // --- Free lfloat* in CommandFunction
     parent->ProcessWindowEvent(evt);   
-}
-
-//--------------------------------------------
-void CalculateClasterizationThread::Progress(lfloat prog)
-{
-    wxCommandEvent evt(AnalyseSystemEvent, aUpdateViewEvtID);
-    evt.SetClientData(new lfloat(prog)); // --- Don't forget free!!!!
-    wxPostEvent(parent, evt);
-}
-
-void *CalculateClasterizationThread::Entry()
-{   
-    std::vector<claster> clasters = u_generic_linkage(cInfo.clasters, attraction_coef, trend_coef, this);
-    if(!TestDestroy())
-    {
-        cInfo.clasters = std::move(clasters);
-    }else{
-        wxLogMessage("Clasterization process: terminated");
-        return nullptr;
-    }
-    wxLogMessage(wxString("Clasterization process: complete with attraction coef-") << attraction_coef << ", trend coef-" << trend_coef);
-    wxCommandEvent evt(AnalyseSystemEvent, aEndClasterizationEvtID);
-    evt.SetClientData(&cInfo.clasters);
-    wxPostEvent(parent, evt);
-    return nullptr;
 }
 

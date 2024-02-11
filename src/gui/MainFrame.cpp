@@ -15,11 +15,10 @@ void MainFrame::loadPoints()
       }else // --- Open fcs files - using python script for convert fcs to csv, and read csv.  ---
       {
          path = '\"'+path+'\"'; // --- For correct reading path argument in python script --- 
-         try{
          a_util::execPythonScript("./scripts/fcs_loader.py", {path,  '\"'+a_util::getCurrentDirectory()+"/temp/temp.csv\""});
          std::system("md temp");
          analyse->LoadPointsFromFileCSV("./temp/temp.csv");
-         } 
+         
       }
   }else
   {
@@ -31,13 +30,15 @@ void MainFrame::loadPoints()
 	// --- Clean up after ourselves ---
 	openFileDialog->Destroy();
 }
-void MainFrame::OnCommand(wxCommandEvent & evt)
+void MainFrame::OnCommand(wxCommandEvent& evt)
 {
   /// --- Log ---
   if(evt.GetId() != aUpdateViewEvtID)  
-    wxLogGeneric(wxLOG_Message, a_util::string_format("Command: %d", evt.GetId()).c_str()); 
- 
-  switch(evt.GetId()){
+    wxLogGeneric(wxLOG_Message, a_util::string_format("Execute command: %d", evt.GetId()).c_str()); 
+  ExecuteCommand(a_util::AEventHandle((evt.getId(), evt.GetClientData(), evt.GetInt())));
+
+  /*
+    switch(evt.GetId()){
     case aStartClasterizationEvtID:
       {
         auto options = panel->GetClasterizationOptions().value();
@@ -73,8 +74,22 @@ void MainFrame::OnCommand(wxCommandEvent & evt)
       break;  
     default:
       break;  
-   }
+   }*/
 
+}
+
+void ExecuteCommand(a_util::AEventHandle handle)
+{
+  switch(handle.getId())
+  {
+     case aStartLoadOfPointsEvtID:
+      loadPoints();
+      break;  
+    case aEndLoadOfPointsEvtID:
+      panel->UpdateDrawingPanel(handle<a_utils::DrawingData>.getValue(), OneColorMode);
+      analyse->endCommand();
+      break;
+  }      
 }
 
 MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& size)

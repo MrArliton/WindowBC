@@ -4,9 +4,18 @@
 class mDrawingPanel : public wxPanel
 {
 private:
-    std::vector<claster>* clasters = nullptr;
-    std::vector<wxColour> clasters_colours;
-    bool colorMode = true;    
+    const a_util::DrawingData& data; // Throw exception if DrawingData destroyed
+
+    wxColour getColour(size_t index)
+    {
+        if(index == 0)
+        {
+            return wxColour(0,0,0);
+        }
+        float hue = GoldenValue * index; // Use principle of the golden ratio
+        auto rgb = wxImage::HSVtoRGB(wxImage::HSVValue(hue, 0.5,0.95)); 
+        return wxColour(rgb.red, rgb.green, rgb.blue);         
+    } 
 
     void render(wxDC& dc)
     {
@@ -59,26 +68,12 @@ private:
             }   
             //
             // --- Draw points
-            if(colorMode)
-            {
-                dc.SetPen(wxPen( DefaultColorForDrawingPoint, PointsWidth ));
-            }else{
-                if(clasters_colours.size() < clasters->size())
-                {
-                    clasters_colours.clear();
-                    clasters_colours.reserve(clasters->size());
-                    for(size_t i = 0;i < clasters->size();i++)
-                    {
-                        clasters_colours.push_back(wxColour(std::rand()%255, std::rand()%255, std::rand()%255));
-                    }
-                }
-            }
             auto cls_id = 0;
-            for(auto cls:(*clasters))
+            for(int i = 0;i < data.points.size();I++)
             {
                 if(!colorMode)
                 {
-                    dc.SetPen(wxPen( clasters_colours[cls_id], PointsWidth ));
+                    dc.SetPen(wxPen(getColour(i), PointsWidth));
                 }
                 for(auto pnt:cls.points)
                 {
@@ -96,26 +91,23 @@ private:
         }
     }
 
-    void OnPaint( wxPaintEvent &evt) 
+    void OnPaint(wxPaintEvent &evt) 
     {
         wxPaintDC dc(this);
-        render(dc);
+        render(dc);        
     } 
 public:
     mDrawingPanel(wxWindow* parent,  wxWindowID id) :  wxPanel(parent, id, wxDefaultPosition, wxDefaultSize, wxFULL_REPAINT_ON_RESIZE)
     {
         this->SetBackgroundStyle(wxBG_STYLE_PAINT);
         this->Bind(wxEVT_PAINT, &mDrawingPanel::OnPaint, this);
+        markersColours.push_back(AFindColour("BLACK"));
     }
 
-    void SetColorMode(bool mode)
+    void SetDrawingData(const DrawingData& _data)
     {
-        colorMode = mode;
-    }
-
-    void SetClasters(std::vector<claster>* clasters)
-    {
-        this->clasters = clasters;
+        data = _data;
+        updateMarkerColours();
     }
 
     const std::vector<claster>& GetClasters()

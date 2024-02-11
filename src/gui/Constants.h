@@ -1,6 +1,7 @@
 
 
-
+#define AFindColour(str) (wxColourDatabase::Find(str))
+#define GoldenValue  0.618033988749895
 
 #define BackgroundMainPanelColor wxColour(50,50,50)
 #define BackgroundPanelDefaultColor wxColour(170,170,170)

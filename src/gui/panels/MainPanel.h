@@ -69,7 +69,7 @@ public:
         toolbarRightPanel->SetEventFunction(func, handler);
         toolbarPanel->SetEventFunction(func, handler);
     }
-    void UpdateDrawingPanel(std::vector<claster>* clasters, bool colorMode = OneColorMode)
+    void UpdateDrawingPanel(std::vector<point>& points, std::vector<size_t>& markers)
     {
         drawingPanel->SetClasters(clasters);
         drawingPanel->SetColorMode(colorMode);

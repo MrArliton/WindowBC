@@ -1,7 +1,5 @@
 
-// --- Takes events from window parts and work with data, make events for visualizations. --- 
-wxDECLARE_EVENT(AnalyseSystemEvent, wxCommandEvent);
-wxDEFINE_EVENT(AnalyseSystemEvent, wxCommandEvent);
+
 
 enum
 {
@@ -15,41 +13,17 @@ enum
     aUpdateViewEvtID,
 };
 
-namespace a_sys
-{
-    struct clast_info
-    {
-        std::string pathToPoints;
-        std::vector<claster> clasters;
-    };
-}
 
-class CalculateClasterizationThread : public wxThread
-{
-private:
-    a_sys::clast_info& cInfo;
-    lfloat attraction_coef;
-    lfloat trend_coef;
-    wxWindow* parent;
-public:
-    CalculateClasterizationThread(wxWindow* nParent ,a_sys::clast_info& nCInfo, lfloat nAttractionCoef, lfloat nTrendCoef) :
-     parent(nParent), cInfo(nCInfo), attraction_coef(nAttractionCoef), trend_coef(nTrendCoef) {}
-    
-    void Progress(lfloat);
 
-    virtual void *Entry();
-    
-    
-};
 
 class AnalyseSystem
 { 
     private:
-        a_sys::clast_info cInfo;
+        std::vector<point> points; // == points for analyzes
         wxWindow* parent; // --- For sending events
-        CalculateClasterizationThread* thread = nullptr;
-
-        std::vector<claster> MakeClastersFromPoints(const std::vector<point>& points); 
+        CalculationThread* thread = nullptr;
+        void openThread();
+        void closeThread();
     public: 
         AnalyseSystem(wxWindow* parent) : parent(parent) {};
 
@@ -60,7 +34,6 @@ class AnalyseSystem
         ~AnalyseSystem() = default;
 
         void LoadPointsFromFileCSV(const std::string& path);
-        void LoadClastersFromPoints(const std::vector<point> points,const std::string& path);
 
         void StartClasterization(lfloat attraction_coef, lfloat trend_coef);
         void RevertClasterization();

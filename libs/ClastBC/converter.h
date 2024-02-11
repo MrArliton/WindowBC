@@ -1,7 +1,7 @@
 
 #include <fstream>
 
-std::optional<std::vector<claster>> convert_csv_to_clasters(std::string path, size_t amount_points = 100000000, char delimiter = ',', size_t arg_1 = 0, size_t arg_2 = 1){
+std::optional<std::vector<claster>> convert_csv_to_points(const std::string& path, size_t amount_points = 100000000, char delimiter = ',', size_t arg_1 = 0, size_t arg_2 = 1){
     std::ifstream file(path);
     if(!file.is_open()){
         std::cerr << "CSV file isn't open: " << path << std::endl;
@@ -13,8 +13,8 @@ std::optional<std::vector<claster>> convert_csv_to_clasters(std::string path, si
 
     std::getline(file,header);
 
-    std::vector<claster> clasters;
-    clasters.reserve(amount_points);    
+    std::vector<point> points;
+    points.reserve(amount_points);    
     // Fill clasters
     size_t i = 0;
     for(std::string line; std::getline(file, line);){
@@ -38,11 +38,11 @@ std::optional<std::vector<claster>> convert_csv_to_clasters(std::string path, si
         buff = line.substr(del,line.find(delimiter,del)-del);
         pnt.push_back(std::stold(buff));
 
-        clasters.emplace_back(std::move(pnt));
+        points.push_back(std::move(pnt));
 
         i++;
         if(i >= amount_points) break;
     }
     //
-    return clasters;
+    return points;
 }

@@ -10,6 +10,7 @@ class MainFrame : public wxFrame
 
     // --- Command event ---
     void OnCommand(wxCommandEvent & evt);
+    void ExecuteCommand(AEventHandle handle);
 
     public:
         MainFrame(const wxString& title, const wxPoint& pos, const wxSize& size);
