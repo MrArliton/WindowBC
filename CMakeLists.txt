@@ -30,11 +30,8 @@ project(clastwindow VERSION 0.1)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-#for using static libraries
-set(wxWidgets_USE_STATIC ON)
-
-#Options
-option(ENABLE_TESTS ON)
+# DEV options 
+set(ENABLE_TESTS OFF)
 
 
 add_subdirectory(libs/wxWidgets)
@@ -47,6 +44,9 @@ target_link_libraries(clastwindow wx::net wx::core wx::base)
 
 if(ENABLE_TESTS)
     enable_testing()
+
+    add_executable(NowTesting src/tests/NowTesting.cpp)
+    add_test(NAME NowTesting COMMAND "./NowTesting")
 endif()
 
     
