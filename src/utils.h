@@ -69,3 +69,31 @@ namespace a_util{
     };
 
 }
+
+namespace a_draw_util
+{
+
+std::pair<std::string, lfloat> getTextFromNumberForAxis(size_t index, size_t amount, lfloat minValue, lfloat maxValue, size_t lengthNumber = 3)  // Index from 0 to amount - 1
+{
+    
+    assert(index < amount && index >= 0);
+    size_t length = 0;
+    lfloat value = minValue + std::round(index * (maxValue - minValue) / (amount - 1.f));
+    lfloat buff = value;        
+    while((value /= 10) >= 1) 
+    {
+        length++; 
+    }
+    value *= 10;
+
+    if(length < lengthNumber) // If a number correct return it
+    {
+        return {std::to_string(value).substr(0, lengthNumber + 1) ,value};
+    }
+
+
+    return {std::to_string(value).substr(0, lengthNumber + 1) + "*10^" + std::to_string(length), buff}; // "LengthNumber + 1" == String have dot.  
+
+}
+
+}

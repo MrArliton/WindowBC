@@ -4,7 +4,7 @@ class MainFrame : public wxFrame
 {
     MainPanel* panel;
     wxBoxSizer* mainSizer;
-    a_anl::AnalyseSystem analyse;
+    a_anl::AnalyseSystem& analyse = a_anl::AnalyseSystem::getInstance();
     // --- Commands ---
     void loadPoints();    
 

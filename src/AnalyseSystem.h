@@ -9,17 +9,24 @@ namespace a_anl
         std::vector<size_t> markers; // Clasters markers
     };
 
-    class AnalyseSystem
+    class AnalyseSystem // Singleton
     {
     private:
         std::vector<condition> steps;
-        int step = 0; // -1 Not a steps       
+        int step = 0; // -1 Not a steps        
+   
+        AnalyseSystem() { steps.emplace_back(); } 
     public:
         AnalyseSystem(const AnalyseSystem&) = delete;
         AnalyseSystem(AnalyseSystem&&) = delete;
         AnalyseSystem& operator=(const AnalyseSystem&) = delete; 
 
-        AnalyseSystem() { steps.emplace_back(); }
+        static AnalyseSystem& getInstance()
+        {
+            static AnalyseSystem analyse; // Singleton
+            return analyse;
+        }
+
         ~AnalyseSystem() {}
 
         //void calculateMethod(const std::string& method,const std::map<std::string, ldouble>& options);

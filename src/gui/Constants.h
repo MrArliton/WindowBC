@@ -20,11 +20,14 @@ enum
 #define ConsolePanelSize wxSize(FromDIP(100),FromDIP(75))
 
 
-// --- Clasterization options ---
-#define DefaultColorForDrawingPoint wxColor(40,40,40)
-#define DefaultColorForDrawingAreaBorder wxColor(255,255,255)
-#define DefaultWidthForDrawingAreaBorder FromDIP(2)
-#define PointsWidth 1
+// --- Graph ---
+#define ColorForDrawingPoint wxColor(40,40,40)
+#define ColorForDrawingAXIS wxColor(255,255,255)
+#define ColorForDrawingAXISMarker wxColor(255,0,255)
+#define ThickForDrawingAxis FromDIP(2)
+#define SizeOfFontAxis FromDIP(2)
+#define SizeOfArrowAxis FromDIP(3)
+#define PointsWidth FromDIP(1)
 #define GraphWidth 280000l
 #define GraphHeight 280000l
 #define AmountOfAxisValues 10 

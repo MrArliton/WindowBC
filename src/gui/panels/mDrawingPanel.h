@@ -17,68 +17,61 @@ private:
 
     void render(wxDC& dc)
     {
+        size_t amount_of_axis_numbers = 10;  
+
+        lfloat minValue = 0;
+        lfloat maxValue = 100000;
+
+        const auto margin = FromDIP(2);          
+        const auto winSize = this->GetSize();
+
         dc.Clear();
 
-           /* const auto margin = FromDIP(2);    
-            const auto margin_for_axis = FromDIP(10);    
-            
+        dc.SetPen(wxPen( ColorForDrawingAXIS, ThickForDrawingAxis ));
+        
+        wxSize maxAxisTextLength = dc.GetTextExtent(wxString(a_draw_util::getTextFromNumberForAxis(amount_of_axis_numbers - 1,amount_of_axis_numbers, minValue, maxValue, 2).first));
+        // Boxes sizes
+        int boxSize = std::min(winSize.GetHeight(), winSize.GetWidth()); 
+        int drawBoxSize = boxSize - margin * 3 - std::max(maxAxisTextLength.GetHeight(), maxAxisTextLength.GetWidth()) - SizeOfArrowAxis;
+        int drawBoxSizeForAxis =  drawBoxSize + SizeOfArrowAxis; // Some bigger then drawBox
+        // Axis coordinates        
+        int startXAxis = std::max((winSize.GetWidth() - boxSize) / 2 + margin, margin);
+        int startYAxis = winSize.GetHeight() - margin;
+        // Drawing zone coordinates 
+        int startXDraw = startXAxis + margin + maxAxisTextLength.GetWidth();
+        int startYDraw = startYAxis - margin - maxAxisTextLength.GetHeight();
 
-            const auto win_size = this->GetSize();
-            const auto drawing_area_size = std::min(win_size.GetWidth(), win_size.GetHeight()) - margin_for_axis*2 - margin*3;
-            const auto start_x = margin + (win_size.GetWidth() - drawing_area_size)/2l + margin_for_axis;
-            const auto start_y = win_size.GetHeight()-(win_size.GetHeight() - drawing_area_size)/2l - margin_for_axis - margin;
+        // Draw axis
+        // Vertical
+        dc.DrawLine(startXDraw, startYDraw, startXDraw, startYDraw - drawBoxSizeForAxis);
+        dc.DrawLine(startXDraw, startYDraw - drawBoxSizeForAxis, startXDraw - SizeOfArrowAxis, startYDraw - drawBoxSizeForAxis + SizeOfArrowAxis);
+        dc.DrawLine(startXDraw, startYDraw - drawBoxSizeForAxis, startXDraw + SizeOfArrowAxis, startYDraw - drawBoxSizeForAxis + SizeOfArrowAxis);
+        // Horizontal
+        dc.DrawLine(startXDraw, startYDraw, startXDraw + drawBoxSizeForAxis, startYDraw);
+        dc.DrawLine(startXDraw + drawBoxSizeForAxis, startYDraw, startXDraw + drawBoxSizeForAxis - SizeOfArrowAxis, startYDraw - SizeOfArrowAxis);
+        dc.DrawLine(startXDraw + drawBoxSizeForAxis, startYDraw, startXDraw + drawBoxSizeForAxis - SizeOfArrowAxis, startYDraw + SizeOfArrowAxis);
+        // Draw Axis text
+        // Vertical
+        for(int i = 0;i < amount_of_axis_numbers;i++)
+        {
+            dc.SetPen(wxPen( ColorForDrawingAXIS, SizeOfFontAxis ));
+            auto value = a_draw_util::getTextFromNumberForAxis(i,amount_of_axis_numbers, minValue, maxValue); // pair<string, float> string --- a string number format --- float is value in the string. 
+            int y = startYDraw - (drawBoxSize * (value.second / (maxValue - minValue)));
+            dc.DrawText(wxString(value.first), startXDraw - margin - dc.GetTextExtent(wxString(value.first)).GetWidth(), y);
+            dc.SetPen(wxPen( ColorForDrawingAXISMarker, ThickForDrawingAxis ));
+            dc.DrawLine(startXDraw - 1, y, startXDraw + 1, y);
+        }
+        // Horizontal
+        dc.SetPen(wxPen( ColorForDrawingAXISMarker, ThickForDrawingAxis ));
+        // WARNING === Add a set FONT
+        for(int i = 1;i < amount_of_axis_numbers;i++)
+        {
+            auto value = a_draw_util::getTextFromNumberForAxis(i,amount_of_axis_numbers, minValue, maxValue, 2); // pair<string, float> string --- a string number format --- float is value in the string. 
+            int x = startXDraw + (drawBoxSize * (value.second / (maxValue - minValue)));
+            dc.DrawText(wxString(value.first), x - dc.GetTextExtent(wxString(value.first)).GetWidth() / 2, startYDraw + margin);
+            dc.DrawLine(x, startYDraw + 1, x, startYDraw - 1);
+        }
 
-            dc.SetPen(wxPen( DefaultColorForDrawingAreaBorder, DefaultWidthForDrawingAreaBorder ));
-
-            // --- Draw Box
-            dc.DrawLine(start_x, start_y, start_x, start_y - drawing_area_size);    
-            dc.DrawLine(start_x, start_y, start_x + drawing_area_size, start_y);
-            dc.DrawLine(start_x, start_y - drawing_area_size, start_x + drawing_area_size , start_y - drawing_area_size);
-            dc.DrawLine(start_x + drawing_area_size ,start_y, start_x + drawing_area_size, start_y - drawing_area_size);
-            /// --- Draw a values on graph
-            const auto margin_axis = FromDIP(5);
-            const auto max_sized_text = wxString::Format(wxT("%.0f"), static_cast<float>(GraphWidth)); 
-            dc.SetFont(wxFont((drawing_area_size/(AmountOfAxisValues))/max_sized_text.Length(), wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
-            const auto text_max_width = dc.GetTextExtent(max_sized_text).GetWidth();
-            // --- Horizontal
-            for(size_t i = 0;i < AmountOfAxisValues;i++)
-            {
-                auto text = wxString::Format(wxT("%.0f"), static_cast<float>(i*(GraphWidth/(AmountOfAxisValues-1))));  
-
-                dc.DrawText(text, start_x + i*(drawing_area_size/(AmountOfAxisValues-1)) - margin_for_axis, start_y + margin_for_axis);
-                dc.SetPen(wxPen( wxColor(100,0,0), DefaultWidthForDrawingAreaBorder ));
-                dc.DrawLine(start_x + i*(drawing_area_size/(AmountOfAxisValues-1)), start_y - FromDIP(1), start_x + i*(drawing_area_size/(AmountOfAxisValues-1)), start_y + FromDIP(1));
-                dc.SetPen(wxPen( DefaultColorForDrawingAreaBorder, DefaultWidthForDrawingAreaBorder ));
-            }
-            dc.SetFont(wxFont(std::min(start_x/max_sized_text.Length(),static_cast<size_t>(dc.GetFont().GetPointSize())), wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
-            // --- Vertical
-            for(size_t i = 1;i < AmountOfAxisValues;i++)
-            {
-                auto text = wxString::Format(wxT("%.0f"), static_cast<float>(i*(GraphHeight/(AmountOfAxisValues-1))));  
-                
-                dc.DrawText(text, start_x - dc.GetTextExtent(text).GetWidth() - margin , start_y - i*(drawing_area_size/(AmountOfAxisValues-1)));
-                dc.SetPen(wxPen( wxColor(100,0,0), DefaultWidthForDrawingAreaBorder ));
-                dc.DrawLine(start_x - FromDIP(1), start_y  - i*(drawing_area_size/(AmountOfAxisValues-1)), start_x + FromDIP(1), start_y  - i*(drawing_area_size/(AmountOfAxisValues-1)));
-                dc.SetPen(wxPen( DefaultColorForDrawingAreaBorder, DefaultWidthForDrawingAreaBorder ));
-            }   
-            //
-            // --- Draw points
-            auto cls_id = 0;
-            for(int i = 0;i < data.points.size();i++)
-            {
-                dc.SetPen(wxPen(getColour(i), PointsWidth));
-                for(auto pnt:cls.points)
-                {
-                    const auto s_x = pnt[0] / GraphWidth;
-                    const auto s_y = pnt[1] / GraphHeight;
-                    if(s_x < 1 && s_y < 1)
-                    {
-                        dc.DrawCircle(start_x + drawing_area_size * s_x,
-                        start_y - drawing_area_size * s_y, PointsWidth);
-                    }
-                }
-                cls_id++;
-            }    */
     }
 
     void OnPaint(wxPaintEvent &evt) 
