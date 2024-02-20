@@ -4,8 +4,6 @@
 class mDrawingPanel : public wxPanel
 {
 private:
-    const a_util::DrawingData& data; // Throw exception if DrawingData destroyed
-
     wxColour getColour(size_t index)
     {
         if(index == 0)
@@ -21,10 +19,7 @@ private:
     {
         dc.Clear();
 
-        if(clasters && clasters->size() > 0)
-        {
-
-            const auto margin = FromDIP(2);    
+           /* const auto margin = FromDIP(2);    
             const auto margin_for_axis = FromDIP(10);    
             
 
@@ -69,12 +64,9 @@ private:
             //
             // --- Draw points
             auto cls_id = 0;
-            for(int i = 0;i < data.points.size();I++)
+            for(int i = 0;i < data.points.size();i++)
             {
-                if(!colorMode)
-                {
-                    dc.SetPen(wxPen(getColour(i), PointsWidth));
-                }
+                dc.SetPen(wxPen(getColour(i), PointsWidth));
                 for(auto pnt:cls.points)
                 {
                     const auto s_x = pnt[0] / GraphWidth;
@@ -86,9 +78,7 @@ private:
                     }
                 }
                 cls_id++;
-            }    
-            
-        }
+            }    */
     }
 
     void OnPaint(wxPaintEvent &evt) 
@@ -101,20 +91,9 @@ public:
     {
         this->SetBackgroundStyle(wxBG_STYLE_PAINT);
         this->Bind(wxEVT_PAINT, &mDrawingPanel::OnPaint, this);
-        markersColours.push_back(AFindColour("BLACK"));
     }
 
-    void SetDrawingData(const DrawingData& _data)
-    {
-        data = _data;
-        updateMarkerColours();
-    }
-
-    const std::vector<claster>& GetClasters()
-    {
-        return *clasters;
-    }
-    
+   
     void Paint()
     { //  
         wxClientDC dc(this);

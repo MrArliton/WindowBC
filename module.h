@@ -12,10 +12,9 @@
 #include <wx/settings.h>
 //
 #include "src/gui/Constants.h"
-#include "src/utils.h"
-
-// --- Analyse --- 
+#include "src/Utils.h"
 #include "src/AnalyseSystem.h"
+
 // --- Panels --- 
 #include "src/gui/panels/mToolbarPanel.h"
 #include "src/gui/panels/mRightToolbarPanel.h"    

@@ -42,8 +42,8 @@ public:
 
         setTrendCoef = new wxTextCtrl(this, wxID_ANY, "2", wxDefaultPosition, wxDefaultSize, 0, wxTextValidator(wxFILTER_NUMERIC));
 
-        startClasterization = new wxButton(this, aStartClasterizationEvtID, " Clasterize ");
-        revertClasterization = new wxButton(this, aStartRevertClasterizationEvtID, " Revert ");
+        startClasterization = new wxButton(this, aStartCalculateEvent," Calculate ");
+        revertClasterization = new wxButton(this, aRevertCalculateEvent, " Revert ");
  
         sizer->Add(attractionCoefText, 0, wxALIGN_CENTER_HORIZONTAL, margin);
         sizer->Add(setAttractionCoef, 0, wxALIGN_CENTER_HORIZONTAL, margin);

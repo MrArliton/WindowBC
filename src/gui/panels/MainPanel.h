@@ -69,10 +69,9 @@ public:
         toolbarRightPanel->SetEventFunction(func, handler);
         toolbarPanel->SetEventFunction(func, handler);
     }
-    void UpdateDrawingPanel(std::vector<point>& points, std::vector<size_t>& markers)
+    
+    void UpdateDrawingPanel(std::vector<point>& points, std::vector<size_t>& markers) /// UPDATE***
     {
-        drawingPanel->SetClasters(clasters);
-        drawingPanel->SetColorMode(colorMode);
         drawingPanel->Paint();
     }
     void UpdateProgressBar(lfloat progress)

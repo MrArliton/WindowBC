@@ -1,5 +1,12 @@
-
-
+// Events ids 
+enum 
+{
+    aDefaultEvent = 0,
+    aStartCalculateEvent,   
+    aRevertCalculateEvent,
+    aLoadPointsInStepEvent
+};
+//
 #define AFindColour(str) (wxColourDatabase::Find(str))
 #define GoldenValue  0.618033988749895
 

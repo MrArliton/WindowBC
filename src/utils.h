@@ -40,7 +40,7 @@ namespace a_util{
 
     void setDataForHandle(wxCommandEvent& evt, void* data, int mode)
     {
-        evt.setInt(mode); // SetMode for EventHandler
+        evt.SetInt(mode); // SetMode for EventHandler
         evt.SetClientData(data);  
     }
 
@@ -48,24 +48,24 @@ namespace a_util{
     {
     private:
         int id; 
-        void* data = nullptr;
+        std::map<std::string, lfloat>* data = nullptr;
         int mode = A_DESTROY_MODE; 
     public:
-        EventHandle(const EventHandle&) = delete;
-        EventHandle(const EventHandle&&) = delete;
-        EventHandle& operator =(const EventHandle&) = delete; 
-        EventHandle(int _id, void* _data, int _mode = A_DESTROY_MODE) : id(_id), data(data_), mode(_mode) {}
-        ~EventHandle() { (data != nullptr && mode == A_DESTROY_MODE) ? {delete data;} };
+        AEventHandle(const AEventHandle&) = delete;
+        AEventHandle(const AEventHandle&&) = delete;
+        AEventHandle& operator =(const AEventHandle&) = delete; 
+        AEventHandle(int _id, std::map<std::string, lfloat>* _data, int _mode = A_DESTROY_MODE) : id(_id), data(_data), mode(_mode) {}
+        ~AEventHandle() { if(data != nullptr && mode == A_DESTROY_MODE) delete data; };
 
-        template<typename TYPE>
-        TYPE& getValue() { return *(static_cast<TYPE*>(data)); } 
+        std::optional<lfloat> getValue(const std::string& key)
+        {
+            if((*data).find(key) != (*data).end())
+            {
+                return (*data)[key];
+            }
+            return std::nullopt;
+        } 
         int getId() { return id; }
-    }
-    // --- Utils for drawing
-    struct DrawingData
-    {
-        std::vector<point>& points; 
-        std::vector<size_t> markers; // For coloring  
-    } 
+    };
 
 }

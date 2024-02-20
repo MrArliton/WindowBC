@@ -9,6 +9,7 @@
 #include <map>
 #include <memory>
 #include <functional>
+#include <iostream>
 
 // --- Types
 typedef float lfloat;  
@@ -16,7 +17,6 @@ typedef float lfloat;
 using point = std::vector<lfloat>;
 using dissimilarities = std::vector<std::vector<lfloat>>;
 // --- 
-#include <iostream>
 
 #include "converter.h" 
 #include "generic_lincage.h"

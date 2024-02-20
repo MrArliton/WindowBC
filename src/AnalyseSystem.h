@@ -1,45 +1,41 @@
 
-
-
-enum
+namespace a_anl
 {
-    aDefaultAnalyseEvtID = 0,
-    aStartLoadOfPointsEvtID,
-    aStartClasterizationEvtID,
-    aStartRevertClasterizationEvtID,
-    aEndLoadOfPointsEvtID, 
-    aEndClasterizationEvtID,
-    aEndRevertClasterizationEvtID,
-    aUpdateViewEvtID,
-};
 
+    struct condition
+    {
+        std::vector<point> points; // Points for working
+        std::map<std::string, lfloat> info; // Info of condition 
+        std::vector<size_t> markers; // Clasters markers
+    };
 
-
-
-class AnalyseSystem
-{ 
+    class AnalyseSystem
+    {
     private:
-        std::vector<point> points; // == points for analyzes
-        wxWindow* parent; // --- For sending events
-        CalculationThread* thread = nullptr;
-        void openThread();
-        void closeThread();
-    public: 
-        AnalyseSystem(wxWindow* parent) : parent(parent) {};
+        std::vector<condition> steps;
+        int step = 0; // -1 Not a steps       
+    public:
+        AnalyseSystem(const AnalyseSystem&) = delete;
+        AnalyseSystem(AnalyseSystem&&) = delete;
+        AnalyseSystem& operator=(const AnalyseSystem&) = delete; 
 
-        AnalyseSystem(const AnalyseSystem &) = delete;
-        AnalyseSystem(AnalyseSystem &&) = delete;
-        AnalyseSystem& operator=(const AnalyseSystem &) = delete;
-        AnalyseSystem& operator=(AnalyseSystem &&) = delete;
-        ~AnalyseSystem() = default;
+        AnalyseSystem() { steps.emplace_back(); }
+        ~AnalyseSystem() {}
 
-        void LoadPointsFromFileCSV(const std::string& path);
+        //void calculateMethod(const std::string& method,const std::map<std::string, ldouble>& options);
 
-        void StartClasterization(lfloat attraction_coef, lfloat trend_coef);
-        void RevertClasterization();
+        void nextStep() { step++; steps.emplace_back(); }
+        void backStep() { if(step > 0) { step--; steps.pop_back(); }}   
 
-        void updateProgress(lfloat progress); // --- From 0 to 1 -- float
-        void endCommand(); // --- Says system that thread is terminated succesfully 
-};
+        void createInStepPoints(const std::vector<point>& points) { steps.at(step).points = points; }  // Copyied
+        void createInStepPoints(std::vector<point>&& points) { std::swap(steps.at(step).points, points); } // Moved
+        
+        int getStepIndex() { return step; }
 
+        condition& getCurrentStepCondition() // We can make some calculation with it
+        { 
+            return steps.at(step);
+        }    
+    };
 
+}
