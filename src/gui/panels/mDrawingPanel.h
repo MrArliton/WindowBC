@@ -4,18 +4,18 @@
 class mDrawingPanel : public wxPanel
 {
 private:
-    wxColour getColour(size_t index)
+    a_anl::AnalyseSystem& analyse = a_anl::AnalyseSystem::getInstance();
+
+    wxColour GetColour(size_t index, size_t amount)
     {
         if(index == 0)
         {
             return wxColour(0,0,0);
         }
-        float hue = GoldenValue * index; // Use principle of the golden ratio
-        auto rgb = wxImage::HSVtoRGB(wxImage::HSVValue(hue, 0.5,0.95)); 
-        return wxColour(rgb.red, rgb.green, rgb.blue);         
+        return wxColour((index * ColorGeneratorShiftRed) % 255, (index * ColorGeneratorShiftGreen) % 255, (index * ColorGeneratorShiftBlue) % 255);         
     } 
 
-    void render(wxDC& dc)
+    void Render(wxDC& dc)
     {
         size_t amount_of_axis_numbers = 10;  
 
@@ -51,6 +51,7 @@ private:
         dc.DrawLine(startXDraw + drawBoxSizeForAxis, startYDraw, startXDraw + drawBoxSizeForAxis - SizeOfArrowAxis, startYDraw - SizeOfArrowAxis);
         dc.DrawLine(startXDraw + drawBoxSizeForAxis, startYDraw, startXDraw + drawBoxSizeForAxis - SizeOfArrowAxis, startYDraw + SizeOfArrowAxis);
         // Draw Axis text
+        dc.SetFont(wxFontInfo(SizeOfFontAxis)); // Set font
         // Vertical
         for(int i = 0;i < amount_of_axis_numbers;i++)
         {
@@ -62,8 +63,7 @@ private:
             dc.DrawLine(startXDraw - 1, y, startXDraw + 1, y);
         }
         // Horizontal
-        dc.SetPen(wxPen( ColorForDrawingAXISMarker, ThickForDrawingAxis ));
-        // WARNING === Add a set FONT
+        dc.SetPen(wxPen( ColorForDrawingAXISMarker, ThickForDrawingAxis ));        
         for(int i = 1;i < amount_of_axis_numbers;i++)
         {
             auto value = a_draw_util::getTextFromNumberForAxis(i,amount_of_axis_numbers, minValue, maxValue, 2); // pair<string, float> string --- a string number format --- float is value in the string. 
@@ -71,13 +71,39 @@ private:
             dc.DrawText(wxString(value.first), x - dc.GetTextExtent(wxString(value.first)).GetWidth() / 2, startYDraw + margin);
             dc.DrawLine(x, startYDraw + 1, x, startYDraw - 1);
         }
+        // Draw points
+        const auto& condition = analyse.GetCurrentStepCondition();
+        const auto points = condition.points;
+        const auto markers = condition.markers;
+        if(points.empty())
+        {
+            return; // Continue Render
+        }
+        dc.SetPen(wxPen( ColorForDrawingPoint, ThickForDrawingAxis ));    
+        
+        if(points.size() > 1)
+        {
+            lfloat mxElem = a_anl_util::GetMaxValueFromAllAxis(points);
+            lfloat mnElem = a_anl_util::GetMinValueFromAllAxis(points);
+            lfloat del = mxElem - mnElem;
+            for(int i = 0;i < points.size();i++)
+            {   
+                if(markers.size() >= points.size())
+                {
+                    auto colour = GetColour(markers[i], points.size());
+                    dc.SetBrush(wxBrush(colour));
+                    dc.SetPen(wxPen( colour, ThickForDrawingAxis ));
+                }    
+                dc.DrawCircle(startXDraw + drawBoxSize * ((points[i][0] - mnElem) / del), startYDraw - drawBoxSize * ((points[i][1] - mnElem) / del), 1);                
+            }
+        }
 
     }
 
     void OnPaint(wxPaintEvent &evt) 
     {
         wxPaintDC dc(this);
-        render(dc);        
+        Render(dc);        
     } 
 public:
     mDrawingPanel(wxWindow* parent,  wxWindowID id) :  wxPanel(parent, id, wxDefaultPosition, wxDefaultSize, wxFULL_REPAINT_ON_RESIZE)
@@ -90,7 +116,7 @@ public:
     void Paint()
     { //  
         wxClientDC dc(this);
-        render(dc);
+        Render(dc);
     }
 
     

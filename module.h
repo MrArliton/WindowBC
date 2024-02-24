@@ -2,7 +2,8 @@
 #include <optional>
 #include <memory>
 #include <unordered_map>
-#include <string> 
+#include <string>
+#include <algorithm>
 // --- Extenal Libs --- 
 #include "libs/ClastBC/module.h"
 #include <wx/wx.h>

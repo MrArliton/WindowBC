@@ -142,6 +142,8 @@ struct binary_heap
     }
 };
 
+namespace{
+
 lfloat u_calculate_disimilarity(const point& point1,const point& point2, lfloat attraction_coef) {
     assert(point1.size() == point2.size());
 
@@ -174,7 +176,6 @@ dissimilarities u_calculate_start_dissimilarities(const std::vector<point>& poin
     return dmat;
 }
 
-
 bool u_stopingCriteria(const std::vector<lfloat>& distances, lfloat trend_coef){ // Calculating criteria of stopping upgmc method 
     const std::vector<lfloat>& last_min_distances = distances;
 
@@ -206,8 +207,10 @@ bool u_stopingCriteria(const std::vector<lfloat>& distances, lfloat trend_coef){
     return true;      
 }
 
+}
+
 template<class u_thread>
-std::vector<std::tuple<size_t, size_t, lfloat>> u_generic_linkage(std::vector<point>& points, lfloat attraction_coef, u_thread* thread){
+std::vector<std::tuple<size_t, size_t, lfloat>> u_generic_linkage(const std::vector<point>& points, lfloat attraction_coef, u_thread* thread){
     std::vector<std::tuple<size_t, size_t, lfloat>> dendrogram;
     std::vector<size_t> sizes(points.size(),1);
     dissimilarities diss = u_calculate_start_dissimilarities(points, attraction_coef);
@@ -351,7 +354,7 @@ std::vector<std::tuple<size_t, size_t, lfloat>> u_generic_linkage(std::vector<po
     return dendrogram;
 }
 
-std::vector<size_t> make_markers_using_markov_stopping(std::vector<point>& points, std::vector<std::tuple<size_t, size_t, lfloat>> dendrogram, lfloat trend_coef)  
+std::vector<size_t> make_markers_using_markov_stopping(const std::vector<point>& points, const std::vector<std::tuple<size_t, size_t, lfloat>> dendrogram, lfloat trend_coef)  
 {
     std::vector<lfloat> distances;
     distances.reserve(dendrogram.size());
@@ -367,10 +370,18 @@ std::vector<size_t> make_markers_using_markov_stopping(std::vector<point>& point
         size_t first = std::get<0>(*iter);
         size_t second =  std::get<1>(*iter);
         distances.push_back(std::get<2>(*iter));
+        size_t buffer = markers[first];
         markers[first] = markers[second];
+        for(auto& marker : markers)
+        {
+            if(marker == buffer)
+            {
+                marker = markers[second]; 
+            }
+        }
+        
         iter = std::next(iter);
-    }
-
+    }    
     return markers;
 }
 

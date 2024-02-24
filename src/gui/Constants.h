@@ -4,7 +4,8 @@ enum
     aDefaultEvent = 0,
     aStartCalculateEvent,   
     aRevertCalculateEvent,
-    aLoadPointsInStepEvent
+    aLoadPointsInStepEvent,
+    aEndCalculationEvent
 };
 //
 #define AFindColour(str) (wxColourDatabase::Find(str))
@@ -21,11 +22,14 @@ enum
 
 
 // --- Graph ---
+#define ColorGeneratorShiftRed 13
+#define ColorGeneratorShiftGreen 21
+#define ColorGeneratorShiftBlue 41
 #define ColorForDrawingPoint wxColor(40,40,40)
 #define ColorForDrawingAXIS wxColor(255,255,255)
 #define ColorForDrawingAXISMarker wxColor(255,0,255)
 #define ThickForDrawingAxis FromDIP(2)
-#define SizeOfFontAxis FromDIP(2)
+#define SizeOfFontAxis FromDIP(8)
 #define SizeOfArrowAxis FromDIP(3)
 #define PointsWidth FromDIP(1)
 #define GraphWidth 280000l

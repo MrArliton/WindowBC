@@ -6,7 +6,7 @@ class MainFrame : public wxFrame
     wxBoxSizer* mainSizer;
     a_anl::AnalyseSystem& analyse = a_anl::AnalyseSystem::getInstance();
     // --- Commands ---
-    void loadPoints();    
+    void LoadPoints();    
 
     // --- Command event ---
     void OnCommand(wxCommandEvent & evt);

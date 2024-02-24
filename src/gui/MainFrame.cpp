@@ -1,5 +1,5 @@
 
-void MainFrame::loadPoints()
+void MainFrame::LoadPoints()
 {
 
     wxFileDialog* openFileDialog = new wxFileDialog(NULL,  _("Open CSV file"), "", "",
@@ -13,7 +13,8 @@ void MainFrame::loadPoints()
         {
                 if(auto points = convert_csv_to_points(path))
                 {
-                    analyse.createInStepPoints(*points);
+                    std::cout << (*points).size() << "\n"; 
+                    analyse.CreateInStepPoints(*points);
                 }
         }
         else // --- Open fcs files - using python script for convert fcs to csv, and read csv.  ---
@@ -23,7 +24,8 @@ void MainFrame::loadPoints()
             a_util::execPythonScript("./scripts/fcs_loader.py", {path,  '\"'+a_util::getCurrentDirectory()+"/temp/temp.csv\""});
             if(auto points = convert_csv_to_points("./temp/temp.csv"))
             {
-                analyse.createInStepPoints(*points);
+                std::cout << (*points).size() << "\n"; 
+                analyse.CreateInStepPoints(*points);
             }    
         }
   }
@@ -50,11 +52,22 @@ void MainFrame::ExecuteCommand(a_util::AEventHandle handle)
     switch(handle.getId())
     {
         case aStartCalculateEvent:
+            {
+                auto options = panel->GetClasterizationOptions();
+                if(!options)
+                {
+                    analyse.CalculateMethod(a_anl::CalculationMethodUPGMC, {});
+                }
+                analyse.CalculateMethod(a_anl::CalculationMethodUPGMC, *options);
+            }
         break;
         case aRevertCalculateEvent:
         break;
         case aLoadPointsInStepEvent:
-            loadPoints();
+            LoadPoints();
+            panel->UpdateDrawingPanel();   
+        case aEndCalculationEvent:
+            panel->UpdateDrawingPanel();    
         break;
     }      
 }
@@ -75,9 +88,12 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
 
     mainSizer->Add(panel, 1, wxEXPAND | wxALL, margin);
     this->SetSizerAndFit(mainSizer);  
-    //---------------------- 
+    // --- Events
+    analyse.AttachEventHandler(dynamic_cast<wxEvtHandler*>(this));
+    Bind(A_ANALYSE_EVT, &MainFrame::OnCommand, this); 
 }
 
 MainFrame::~MainFrame()
 {
+    analyse.DettachEventHanddler(dynamic_cast<wxEvtHandler*>(this));
 }

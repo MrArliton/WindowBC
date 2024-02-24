@@ -1,6 +1,21 @@
 
+// Events
+wxDECLARE_EVENT(A_ANALYSE_EVT, wxCommandEvent);
+
+enum AnalyseEvtID
+{
+    AEndCalculationEvtID = 1
+};
+
 namespace a_anl
 {
+    class AnalyseSystem;
+    class CalculateThread;
+
+    enum Method
+    {
+        CalculationMethodUPGMC = 1
+    };
 
     struct condition
     {
@@ -9,13 +24,51 @@ namespace a_anl
         std::vector<size_t> markers; // Clasters markers
     };
 
+    class CalculateThread : public wxThread
+    {
+    protected:
+        AnalyseSystem& handler;
+        std::map<std::string, lfloat> params;
+        int(*calcFunction)(CalculateThread* thread,const std::map<std::string, lfloat>& params);
+    public:    
+        CalculateThread(AnalyseSystem& _handler, int(*func)(CalculateThread* thread,const std::map<std::string, lfloat>& __params),const std::map<std::string, lfloat>& _params)
+        : wxThread(wxTHREAD_DETACHED),
+         handler(_handler),
+          calcFunction(func),
+           params(_params) {}
+
+        std::vector<point>& GetPoints();
+
+        void SetPoints(const std::vector<point>& points);
+        void SetPoints(std::vector<point>&& points);
+
+        void SetMarkers(const std::vector<size_t>& markers);
+        void SetMarkers(std::vector<size_t>&& markers);    
+
+        void Progress(lfloat progress) { };
+        ~CalculateThread();
+
+    protected:
+       virtual ExitCode Entry()
+       {
+            return reinterpret_cast<wxThread::ExitCode>(calcFunction(this, params));
+       };
+    };
+
     class AnalyseSystem // Singleton
     {
-    private:
+    friend class CalculateThread;    
+    protected:
+        wxEvtHandler* eventHandler;
+        // Realise synchronize with analyse
+        wxCriticalSection calcThreadCS;
+        CalculateThread* calcThread;
+        //
         std::vector<condition> steps;
         int step = 0; // -1 Not a steps        
    
         AnalyseSystem() { steps.emplace_back(); } 
+
     public:
         AnalyseSystem(const AnalyseSystem&) = delete;
         AnalyseSystem(AnalyseSystem&&) = delete;
@@ -27,22 +80,36 @@ namespace a_anl
             return analyse;
         }
 
-        ~AnalyseSystem() {}
+        ~AnalyseSystem() { TerminateCalculation(); }
 
-        //void calculateMethod(const std::string& method,const std::map<std::string, ldouble>& options);
+        void CalculateMethod(Method method,const std::map<std::string, lfloat>& params); // Start a calculationThread with some method
+        void TerminateCalculation();
 
-        void nextStep() { step++; steps.emplace_back(); }
-        void backStep() { if(step > 0) { step--; steps.pop_back(); }}   
+        void NextStep() { step++; steps.emplace_back(); }
+        void BackStep() { if(step > 0) { step--; steps.pop_back(); }}   
 
-        void createInStepPoints(const std::vector<point>& points) { steps.at(step).points = points; }  // Copyied
-        void createInStepPoints(std::vector<point>&& points) { std::swap(steps.at(step).points, points); } // Moved
+        void CreateInStepPoints(const std::vector<point>& points);
+        void CreateInStepPoints(std::vector<point>&& points); 
         
-        int getStepIndex() { return step; }
+        int GetStepIndex() { return step; }
 
-        condition& getCurrentStepCondition() // We can make some calculation with it
-        { 
-            return steps.at(step);
-        }    
+        void AttachEventHandler(wxEvtHandler* _eventHandler) // Detach handler if you will destroy it
+        { eventHandler =  _eventHandler;}
+
+        bool DettachEventHanddler(wxEvtHandler* _eventHandler) // Detach if input handler == in analyse handler
+        {
+            if(_eventHandler == eventHandler)
+            {
+                eventHandler = nullptr;
+                return true;
+            }
+            return false;
+        }     
+
+        condition& GetCurrentStepCondition(); // We can make some easy calculation with it
+
     };
+
+
 
 }

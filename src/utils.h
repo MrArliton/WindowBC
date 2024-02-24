@@ -70,6 +70,41 @@ namespace a_util{
 
 }
 
+namespace a_anl_util
+{
+    lfloat GetMaxValueFromAllAxis(const std::vector<point>& points)
+    {
+        lfloat mx = std::numeric_limits<lfloat>().min();
+        for(auto& point : points)
+        {
+            for(auto value : point)
+            {
+                if(value > mx)
+                {
+                    mx = value;
+                }
+            }
+        }
+        return mx;
+    }
+    lfloat GetMinValueFromAllAxis(const std::vector<point>& points)
+    {
+        lfloat mn = std::numeric_limits<lfloat>().max();
+        for(auto& point : points)
+        {
+            for(auto value : point)
+            {
+                if(value < mn)
+                {
+                    mn = value;
+                }
+            }
+        }
+        return mn;
+    }
+
+}
+ 
 namespace a_draw_util
 {
 
