@@ -254,6 +254,7 @@ std::vector<std::tuple<size_t, size_t, lfloat>> u_generic_linkage(const std::vec
     const size_t s_amount = points.size()/100 + 1; 
     while(indexes.size() > 1) {
         // --- For Thread working with wxWidgets ---
+        iteration++;
         if(thread->TestDestroy())
         {
             return {};

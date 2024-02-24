@@ -59,7 +59,7 @@ namespace a_util{
 
         std::optional<lfloat> getValue(const std::string& key)
         {
-            if((*data).find(key) != (*data).end())
+            if(data != nullptr && (*data).find(key) != (*data).end())
             {
                 return (*data)[key];
             }
@@ -109,8 +109,7 @@ namespace a_draw_util
 {
 
 std::pair<std::string, lfloat> getTextFromNumberForAxis(size_t index, size_t amount, lfloat minValue, lfloat maxValue, size_t lengthNumber = 3)  // Index from 0 to amount - 1
-{
-    
+{    
     assert(index < amount && index >= 0);
     size_t length = 0;
     lfloat value = minValue + std::round(index * (maxValue - minValue) / (amount - 1.f));

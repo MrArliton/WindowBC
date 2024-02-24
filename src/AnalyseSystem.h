@@ -45,7 +45,7 @@ namespace a_anl
         void SetMarkers(const std::vector<size_t>& markers);
         void SetMarkers(std::vector<size_t>&& markers);    
 
-        void Progress(lfloat progress) { };
+        void Progress(lfloat progress);
         ~CalculateThread();
 
     protected:

@@ -5,7 +5,7 @@ class mDrawingPanel : public wxPanel
 {
 private:
     a_anl::AnalyseSystem& analyse = a_anl::AnalyseSystem::getInstance();
-
+    
     wxColour GetColour(size_t index, size_t amount)
     {
         if(index == 0)

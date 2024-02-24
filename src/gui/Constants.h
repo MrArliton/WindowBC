@@ -5,7 +5,8 @@ enum
     aStartCalculateEvent,   
     aRevertCalculateEvent,
     aLoadPointsInStepEvent,
-    aEndCalculationEvent
+    aEndCalculationEvent,
+    aUpdateProgress
 };
 //
 #define AFindColour(str) (wxColourDatabase::Find(str))

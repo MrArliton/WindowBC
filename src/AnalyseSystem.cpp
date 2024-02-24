@@ -1,12 +1,9 @@
-#include <unordered_set>
-
+// Event of Analyse system
 wxDEFINE_EVENT(A_ANALYSE_EVT, wxCommandEvent);
 
 namespace a_anl
 {
-
 // AnalyseSystem class
-
 namespace // Calculate functions
 {
     std::vector<std::tuple<size_t, size_t, lfloat>> data_upgmc; // REmake info
@@ -14,23 +11,15 @@ namespace // Calculate functions
     {        
         if(data_upgmc.empty())
         {
-            std::cout << "Create\n";
             data_upgmc = u_generic_linkage<CalculateThread>(thread->GetPoints(), params.at("attraction_coef"), thread);
         }
-        std::cout << "Markers\n";
         auto markers = make_markers_using_markov_stopping(thread->GetPoints(), data_upgmc, params.at("trend_coef"));
         thread->SetMarkers(markers);    
-        std::unordered_set<size_t> st;
-        for(auto marker : markers)
-        {
-            st.insert(marker);
-        }   
-        std::cout << st.size() << "\n";
         return 1;
     }
 
 }
-
+// Start calculation thread with some method
 void AnalyseSystem::CalculateMethod(Method method,const std::map<std::string, lfloat>& params)
 {
     switch(method)
@@ -54,7 +43,7 @@ void AnalyseSystem::CalculateMethod(Method method,const std::map<std::string, lf
         break;
     }
 }
-
+// Close the calculation thread
 void AnalyseSystem::TerminateCalculation()
 {
         {
@@ -74,7 +63,7 @@ void AnalyseSystem::TerminateCalculation()
             wxThread::This()->Sleep(1);
         }
 }
-
+// Load points into step
 void AnalyseSystem::CreateInStepPoints(const std::vector<point>& points)
 {
     TerminateCalculation();
@@ -103,7 +92,7 @@ void AnalyseSystem::CreateInStepPoints(std::vector<point>&& points)
     }
     std::swap(steps.at(step).points, points);
 } 
-
+// Get info about current step
 condition& AnalyseSystem::GetCurrentStepCondition()
 { 
     {
@@ -120,6 +109,19 @@ condition& AnalyseSystem::GetCurrentStepCondition()
 
 // CalculateThread Class
 
+void CalculateThread::Progress(lfloat progress)
+{
+    if(handler.eventHandler != nullptr)
+    {
+        wxCommandEvent event(A_ANALYSE_EVT, aUpdateProgress);
+        event.SetClientData(new std::map<std::string, lfloat>({{"progress",progress}}));
+        event.SetInt(a_util::A_DESTROY_MODE);
+        handler.eventHandler->AddPendingEvent(event);
+    }
+}
+
+// --- Block of data controll  
+// Getters
 std::vector<point>& CalculateThread::GetPoints()
 {
     wxCriticalSectionLocker enter(handler.calcThreadCS);
@@ -131,6 +133,7 @@ void CalculateThread::SetPoints(const std::vector<point>& points)
     wxCriticalSectionLocker enter(handler.calcThreadCS);
     handler.steps[handler.GetStepIndex()].points = points;    
 }
+// Setters
 void CalculateThread::SetPoints(std::vector<point>&& points)
 {
     wxCriticalSectionLocker enter(handler.calcThreadCS);
@@ -143,6 +146,7 @@ void CalculateThread::SetMarkers(const std::vector<size_t>& markers)
     handler.steps[handler.GetStepIndex()].markers = markers;
 
 }
+
 void CalculateThread::SetMarkers(std::vector<size_t>&& markers)
 {
     wxCriticalSectionLocker enter(handler.calcThreadCS);

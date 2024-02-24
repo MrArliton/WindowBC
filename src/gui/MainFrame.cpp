@@ -67,7 +67,16 @@ void MainFrame::ExecuteCommand(a_util::AEventHandle handle)
             LoadPoints();
             panel->UpdateDrawingPanel();   
         case aEndCalculationEvent:
-            panel->UpdateDrawingPanel();    
+            panel->UpdateDrawingPanel();   
+        case aUpdateProgress: // Update progress bar
+            {
+                auto progress = handle.getValue("progress");
+                if(progress)
+                {
+                    panel->UpdateProgressBar(*progress);      
+                }
+            }
+ 
         break;
     }      
 }
