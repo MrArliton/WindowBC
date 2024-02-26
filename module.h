@@ -2,7 +2,8 @@
 #include <optional>
 #include <memory>
 #include <unordered_map>
-#include <string> 
+#include <string>
+#include <algorithm>
 // --- Extenal Libs --- 
 #include "libs/ClastBC/module.h"
 #include <wx/wx.h>
@@ -12,10 +13,9 @@
 #include <wx/settings.h>
 //
 #include "src/gui/Constants.h"
-#include "src/utils.h"
-
-// --- Analyse --- 
+#include "src/Utils.h"
 #include "src/AnalyseSystem.h"
+
 // --- Panels --- 
 #include "src/gui/panels/mToolbarPanel.h"
 #include "src/gui/panels/mRightToolbarPanel.h"    

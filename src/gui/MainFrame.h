@@ -1,15 +1,16 @@
 
+
 class MainFrame : public wxFrame
 {
     MainPanel* panel;
     wxBoxSizer* mainSizer;
-
-    std::unique_ptr<AnalyseSystem> analyse;
+    a_anl::AnalyseSystem& analyse = a_anl::AnalyseSystem::getInstance();
     // --- Commands ---
-    void loadPoints();    
+    void LoadPoints();    
 
     // --- Command event ---
     void OnCommand(wxCommandEvent & evt);
+    void ExecuteCommand(a_util::AEventHandle handle);
 
     public:
         MainFrame(const wxString& title, const wxPoint& pos, const wxSize& size);

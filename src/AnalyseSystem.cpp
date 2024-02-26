@@ -1,125 +1,169 @@
+// Event of Analyse system
+wxDEFINE_EVENT(A_ANALYSE_EVT, wxCommandEvent);
 
-std::vector<claster> AnalyseSystem::MakeClastersFromPoints(const std::vector<point>& points)
+namespace a_anl
 {
-    std::vector<claster> clasters;
-    clasters.reserve(points.size());
-    for(auto pnt:points)
-    {   
-        clasters.emplace_back(pnt);
+// AnalyseSystem class
+namespace // Calculate functions
+{
+    std::vector<std::tuple<size_t, size_t, lfloat>> data_upgmc; // REmake info
+    int CalculateUPGMC(CalculateThread* thread, const std::map<std::string, lfloat>& params)
+    {        
+        if(data_upgmc.empty())
+        {
+            data_upgmc = u_generic_linkage<CalculateThread>(thread->GetPoints(), params.at("attraction_coef"), thread);
+        }
+        auto markers = make_markers_using_markov_stopping(thread->GetPoints(), data_upgmc, params.at("trend_coef"));
+        thread->SetMarkers(markers);    
+        return 1;
     }
 
-    return clasters;
+}
+// Start calculation thread with some method
+void AnalyseSystem::CalculateMethod(Method method,const std::map<std::string, lfloat>& params)
+{
+    switch(method)
+    {
+        case(CalculationMethodUPGMC):
+            TerminateCalculation();
+            if(!GetCurrentStepCondition().points.empty())
+            {
+                calcThread = new CalculateThread(*this, CalculateUPGMC, params);
+                if ( calcThread->Run() != wxTHREAD_NO_ERROR )
+                {
+                    wxLogError("Can't create the thread!");
+                    delete calcThread;
+                    calcThread = nullptr;
+                }
+            }
+            else
+            {
+                wxLogGeneric(wxLOG_Message, "Points isn't load, clasterization cannot start"); 
+            }
+        break;
+    }
+}
+// Close the calculation thread
+void AnalyseSystem::TerminateCalculation()
+{
+        {
+            wxCriticalSectionLocker enter(calcThreadCS);
+            if(calcThread)
+            {
+                calcThread->Delete();        
+            }
+        }
+        while (true)
+        {
+            { 
+                wxCriticalSectionLocker enter(calcThreadCS);
+                if (!calcThread) break;
+            }
+            // wait for thread completion
+            wxThread::This()->Sleep(1);
+        }
+}
+// Load points into step
+void AnalyseSystem::CreateInStepPoints(const std::vector<point>& points)
+{
+    TerminateCalculation();
+    
+    steps.at(step).points = points;       
+    
+}  
+
+void AnalyseSystem::CreateInStepPoints(std::vector<point>&& points)
+{
+    {
+        wxCriticalSectionLocker enter(calcThreadCS);
+        if(calcThread)
+        {
+            calcThread->Delete();        
+        }
+        while (true)
+        {
+            { 
+                wxCriticalSectionLocker enter(calcThreadCS);
+                if (!calcThread) break;
+            }
+            // wait for thread completion
+            wxThread::This()->Sleep(1);
+        }
+    }
+    std::swap(steps.at(step).points, points);
+} 
+// Get info about current step
+condition& AnalyseSystem::GetCurrentStepCondition()
+{ 
+    {
+        wxCriticalSectionLocker enter(calcThreadCS);
+        if(!calcThread) // When calcutions is being, we can't take
+        {
+            return steps.at(step);
+        }
+        static condition cond; // Special condition, because required condition not available
+        cond.info["unavailable"] = 1.f; 
+        return cond;
+    }
+}
+
+// CalculateThread Class
+
+void CalculateThread::Progress(lfloat progress)
+{
+    if(handler.eventHandler != nullptr)
+    {
+        wxCommandEvent event(A_ANALYSE_EVT, aUpdateProgress);
+        event.SetClientData(new std::map<std::string, lfloat>({{"progress",progress}}));
+        event.SetInt(a_util::A_DESTROY_MODE);
+        handler.eventHandler->AddPendingEvent(event);
+    }
+}
+
+// --- Block of data controll  
+// Getters
+std::vector<point>& CalculateThread::GetPoints()
+{
+    wxCriticalSectionLocker enter(handler.calcThreadCS);
+    return handler.steps[handler.GetStepIndex()].points;
+}
+
+void CalculateThread::SetPoints(const std::vector<point>& points)
+{
+    wxCriticalSectionLocker enter(handler.calcThreadCS);
+    handler.steps[handler.GetStepIndex()].points = points;    
+}
+// Setters
+void CalculateThread::SetPoints(std::vector<point>&& points)
+{
+    wxCriticalSectionLocker enter(handler.calcThreadCS);
+    handler.steps[handler.GetStepIndex()].points = std::move(points);
+}
+
+void CalculateThread::SetMarkers(const std::vector<size_t>& markers)
+{
+    wxCriticalSectionLocker enter(handler.calcThreadCS);
+    handler.steps[handler.GetStepIndex()].markers = markers;
+
+}
+
+void CalculateThread::SetMarkers(std::vector<size_t>&& markers)
+{
+    wxCriticalSectionLocker enter(handler.calcThreadCS);
+    handler.steps[handler.GetStepIndex()].markers = std::move(markers);
 } 
 
-
-void AnalyseSystem::LoadPointsFromFileCSV(const std::string& path)
+CalculateThread::~CalculateThread()
 {
-    if(thread)
+    wxCriticalSectionLocker enter(handler.calcThreadCS); // Lock
+    // Thread being destroyed 
+    handler.calcThread = nullptr;
+    // Send event
+    if(handler.eventHandler != nullptr)
     {
-        thread->Delete();
-        thread = nullptr;
-
-        updateProgress(0);
+        wxCommandEvent event(A_ANALYSE_EVT, aEndCalculationEvent);
+        handler.eventHandler->AddPendingEvent(event);
     }
+}  
 
-    cInfo.pathToPoints = path;
-    cInfo.clasters = std::move(convert_csv_to_clasters(path, MaxPointsForLoading).value());
-    wxCommandEvent evt(AnalyseSystemEvent, aEndLoadOfPointsEvtID);
-    evt.SetClientData(&cInfo.clasters);
-    parent->ProcessWindowEvent(evt);
-}
-
- void AnalyseSystem::LoadClastersFromPoints(const std::vector<point> points,const std::string& path)
- {
-    if(thread)
-    {
-        thread->Delete();
-        thread = nullptr;
-
-        updateProgress(0);
-    }
-
-    cInfo.pathToPoints = path;
-    cInfo.clasters = std::move(MakeClastersFromPoints(points));
-    wxCommandEvent evt(AnalyseSystemEvent, aEndLoadOfPointsEvtID);
-    evt.SetClientData(&cInfo.clasters);
-    parent->ProcessWindowEvent(evt);
-
- }
-
-
-void AnalyseSystem::StartClasterization(lfloat attraction_coef, lfloat trend_coef)
-{
-    if(thread)
-    {   
-        thread->Delete();
-        thread = nullptr;
-
-        updateProgress(0);
-    }    
-    if(!thread)
-    {
-        thread = new CalculateClasterizationThread(parent, cInfo, attraction_coef, trend_coef);
-        if (thread->Create() != wxTHREAD_NO_ERROR)
-        {
-            wxLogError(wxT("Can’t create CalculationThread!"));
-        }else
-        {
-            thread->Run();
-        }
-        
-    }
-}
-
-void AnalyseSystem::RevertClasterization()
-{
-    if(thread)
-    {
-        thread->Delete();
-        thread = nullptr;
-
-        updateProgress(0);
-    }
-    cInfo.clasters = std::move(convert_csv_to_clasters(cInfo.pathToPoints, MaxPointsForLoading).value());
-    wxCommandEvent evt(AnalyseSystemEvent, aEndRevertClasterizationEvtID);
-    evt.SetClientData(&cInfo.clasters);
-    parent->ProcessWindowEvent(evt);         
-}
-
-void AnalyseSystem::endCommand()
-{
-    thread = nullptr;
-}
-
-void AnalyseSystem::updateProgress(lfloat progress)
-{
-    wxCommandEvent evt(AnalyseSystemEvent, aUpdateViewEvtID);
-    evt.SetClientData(new lfloat(progress)); // --- Free lfloat* in CommandFunction
-    parent->ProcessWindowEvent(evt);   
-}
-
-//--------------------------------------------
-void CalculateClasterizationThread::Progress(lfloat prog)
-{
-    wxCommandEvent evt(AnalyseSystemEvent, aUpdateViewEvtID);
-    evt.SetClientData(new lfloat(prog)); // --- Don't forget free!!!!
-    wxPostEvent(parent, evt);
-}
-
-void *CalculateClasterizationThread::Entry()
-{   
-    std::vector<claster> clasters = u_generic_linkage(cInfo.clasters, attraction_coef, trend_coef, this);
-    if(!TestDestroy())
-    {
-        cInfo.clasters = std::move(clasters);
-    }else{
-        wxLogMessage("Clasterization process: terminated");
-        return nullptr;
-    }
-    wxLogMessage(wxString("Clasterization process: complete with attraction coef-") << attraction_coef << ", trend coef-" << trend_coef);
-    wxCommandEvent evt(AnalyseSystemEvent, aEndClasterizationEvtID);
-    evt.SetClientData(&cInfo.clasters);
-    wxPostEvent(parent, evt);
-    return nullptr;
-}
-
+} // namespace

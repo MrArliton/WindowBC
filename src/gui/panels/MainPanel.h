@@ -63,18 +63,19 @@ public:
         this->SetSizer(sizer);
 
     } 
+
     template<typename Class,typename EventHandler>
     void SetEventFunction(void(Class::*func)(wxCommandEvent & evt), EventHandler* handler)
     {
         toolbarRightPanel->SetEventFunction(func, handler);
         toolbarPanel->SetEventFunction(func, handler);
     }
-    void UpdateDrawingPanel(std::vector<claster>* clasters, bool colorMode = OneColorMode)
+    
+    void UpdateDrawingPanel() 
     {
-        drawingPanel->SetClasters(clasters);
-        drawingPanel->SetColorMode(colorMode);
         drawingPanel->Paint();
     }
+
     void UpdateProgressBar(lfloat progress)
     {
         toolbarLeftPanel->SetProgress(progress);
@@ -92,6 +93,7 @@ public:
             std::cerr << "Error: Attraction or Trend Coefficients are incorrect.";
             return std::nullopt;
         }
+        // Params
         mp["attraction_coef"] = a_coef.value();
         mp["trend_coef"] = t_coef.value();
         mp["size"] = t_coef.value(); 

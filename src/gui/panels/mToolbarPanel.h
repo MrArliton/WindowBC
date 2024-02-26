@@ -12,7 +12,7 @@ public:
 
         wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
 
-        loadFileButton = new wxButton(this, aStartLoadOfPointsEvtID, "Load file");
+        loadFileButton = new wxButton(this, aLoadPointsInStepEvent, "Load file");
 
         sizer->Add(loadFileButton, wxALIGN_LEFT, margin);
 

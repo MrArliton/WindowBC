@@ -1,72 +1,115 @@
 
-// --- Takes events from window parts and work with data, make events for visualizations. --- 
-wxDECLARE_EVENT(AnalyseSystemEvent, wxCommandEvent);
-wxDEFINE_EVENT(AnalyseSystemEvent, wxCommandEvent);
+// Events
+wxDECLARE_EVENT(A_ANALYSE_EVT, wxCommandEvent);
 
-enum
+enum AnalyseEvtID
 {
-    aDefaultAnalyseEvtID = 0,
-    aStartLoadOfPointsEvtID,
-    aStartClasterizationEvtID,
-    aStartRevertClasterizationEvtID,
-    aEndLoadOfPointsEvtID, 
-    aEndClasterizationEvtID,
-    aEndRevertClasterizationEvtID,
-    aUpdateViewEvtID,
+    AEndCalculationEvtID = 1
 };
 
-namespace a_sys
+namespace a_anl
 {
-    struct clast_info
+    class AnalyseSystem;
+    class CalculateThread;
+
+    enum Method
     {
-        std::string pathToPoints;
-        std::vector<claster> clasters;
+        CalculationMethodUPGMC = 1
     };
+
+    struct condition
+    {
+        std::vector<point> points; // Points for working
+        std::map<std::string, lfloat> info; // Info of condition 
+        std::vector<size_t> markers; // Clasters markers
+    };
+
+    class CalculateThread : public wxThread
+    {
+    protected:
+        AnalyseSystem& handler;
+        std::map<std::string, lfloat> params;
+        int(*calcFunction)(CalculateThread* thread,const std::map<std::string, lfloat>& params);
+    public:    
+        CalculateThread(AnalyseSystem& _handler, int(*func)(CalculateThread* thread,const std::map<std::string, lfloat>& __params),const std::map<std::string, lfloat>& _params)
+        : wxThread(wxTHREAD_DETACHED),
+         handler(_handler),
+          calcFunction(func),
+           params(_params) {}
+
+        std::vector<point>& GetPoints();
+
+        void SetPoints(const std::vector<point>& points);
+        void SetPoints(std::vector<point>&& points);
+
+        void SetMarkers(const std::vector<size_t>& markers);
+        void SetMarkers(std::vector<size_t>&& markers);    
+
+        void Progress(lfloat progress);
+        ~CalculateThread();
+
+    protected:
+       virtual ExitCode Entry()
+       {
+            return reinterpret_cast<wxThread::ExitCode>(calcFunction(this, params));
+       };
+    };
+
+    class AnalyseSystem // Singleton
+    {
+    friend class CalculateThread;    
+    protected:
+        wxEvtHandler* eventHandler;
+        // Realise synchronize with analyse
+        wxCriticalSection calcThreadCS;
+        CalculateThread* calcThread;
+        //
+        std::vector<condition> steps;
+        int step = 0; // -1 Not a steps        
+   
+        AnalyseSystem() { steps.emplace_back(); } 
+
+    public:
+        AnalyseSystem(const AnalyseSystem&) = delete;
+        AnalyseSystem(AnalyseSystem&&) = delete;
+        AnalyseSystem& operator=(const AnalyseSystem&) = delete; 
+
+        static AnalyseSystem& getInstance()
+        {
+            static AnalyseSystem analyse; // Singleton
+            return analyse;
+        }
+
+        ~AnalyseSystem() { TerminateCalculation(); }
+
+        void CalculateMethod(Method method,const std::map<std::string, lfloat>& params); // Start a calculationThread with some method
+        void TerminateCalculation();
+
+        void NextStep() { step++; steps.emplace_back(); }
+        void BackStep() { if(step > 0) { step--; steps.pop_back(); }}   
+
+        void CreateInStepPoints(const std::vector<point>& points);
+        void CreateInStepPoints(std::vector<point>&& points); 
+        
+        int GetStepIndex() { return step; }
+
+        void AttachEventHandler(wxEvtHandler* _eventHandler) // Detach handler if you will destroy it
+        { eventHandler =  _eventHandler;}
+
+        bool DettachEventHanddler(wxEvtHandler* _eventHandler) // Detach if input handler == in analyse handler
+        {
+            if(_eventHandler == eventHandler)
+            {
+                eventHandler = nullptr;
+                return true;
+            }
+            return false;
+        }     
+
+        condition& GetCurrentStepCondition(); // We can make some easy calculation with it
+
+    };
+
+
+
 }
-
-class CalculateClasterizationThread : public wxThread
-{
-private:
-    a_sys::clast_info& cInfo;
-    lfloat attraction_coef;
-    lfloat trend_coef;
-    wxWindow* parent;
-public:
-    CalculateClasterizationThread(wxWindow* nParent ,a_sys::clast_info& nCInfo, lfloat nAttractionCoef, lfloat nTrendCoef) :
-     parent(nParent), cInfo(nCInfo), attraction_coef(nAttractionCoef), trend_coef(nTrendCoef) {}
-    
-    void Progress(lfloat);
-
-    virtual void *Entry();
-    
-    
-};
-
-class AnalyseSystem
-{ 
-    private:
-        a_sys::clast_info cInfo;
-        wxWindow* parent; // --- For sending events
-        CalculateClasterizationThread* thread = nullptr;
-
-        std::vector<claster> MakeClastersFromPoints(const std::vector<point>& points); 
-    public: 
-        AnalyseSystem(wxWindow* parent) : parent(parent) {};
-
-        AnalyseSystem(const AnalyseSystem &) = delete;
-        AnalyseSystem(AnalyseSystem &&) = delete;
-        AnalyseSystem& operator=(const AnalyseSystem &) = delete;
-        AnalyseSystem& operator=(AnalyseSystem &&) = delete;
-        ~AnalyseSystem() = default;
-
-        void LoadPointsFromFileCSV(const std::string& path);
-        void LoadClastersFromPoints(const std::vector<point> points,const std::string& path);
-
-        void StartClasterization(lfloat attraction_coef, lfloat trend_coef);
-        void RevertClasterization();
-
-        void updateProgress(lfloat progress); // --- From 0 to 1 -- float
-        void endCommand(); // --- Says system that thread is terminated succesfully 
-};
-
-
